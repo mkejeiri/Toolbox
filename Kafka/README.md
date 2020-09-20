@@ -185,3 +185,24 @@
 - As long as the **number of partitions** remains **constant** for a `topic` (**no new partitions**), the same `key` will always go to the **same** `partition`.
 
 ![pic](images/summary.jpg)
+
+
+# Ubuntu 18.4 Insallation 
+
+1 - ` wget https://downloads.apache.org/kafka/2.6.0/kafka_2.13-2.6.0.tgz`.
+
+2 - `tar xzf kafka_2.13-2.6.0.tgz  -C /opt/`.
+
+3 - ` dev@slave-node:/opt/kafka_2.13-2.6.0$ mkdir data`.
+
+4 - ` dev@slave-node:/opt/kafka_2.13-2.6.0$ mkdir data/zookeeper`.
+
+5 - ` vim config/zookeeper.properties `  & **change** `dataDir=/opt/kafka_2.13-2.6.0/data/zookeeper` and **save**.
+
+6 - start zookeeper ` dev@slave-node:/opt/kafka_2.13-2.6.0$ zookeeper-server-start.sh  config/zookeeper.properties`.
+
+7 - check if version-2 is created .
+```sh
+dev@slave-node:/opt/kafka_2.13-2.6.0$ ls data/zookeeper/
+version-2
+```
