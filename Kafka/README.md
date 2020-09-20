@@ -9,7 +9,7 @@
 	- Can scale to **100s** of **brokers**
 	- Can scale to **1M messages per second**
 - **High performance** (latency of less that 10 ms) - **real time**
-- Used by **2000+firms **, 35% of the Fortune 500.
+- Used by **2000+firms**, 35% of the Fortune 500.
  
 **What's for?**:
 
@@ -87,7 +87,7 @@
 - In case of **broker failures**, **producers** will automatically **recover**
 - **Producers** can choose **acknowledgemen** of **data writes in 3 ways**: 
 	- `acks=0` : `producer` won't wait for **acknowledgement**
-	- `acks=1` : `producer` will wait for a ** leader acknowledgement** (*limited data loss*)
+	- `acks=1` : `producer` will wait for a **leader acknowledgement** (*limited data loss*)
 	- `acks=all` :`producer` will wait for a **leader & replicas acknowledgement**  (*no data loss*)
 	
 ![pic](images/producers.jpg)
@@ -199,10 +199,17 @@
 
 5 - ` vim config/zookeeper.properties `  & **change** `dataDir=/opt/kafka_2.13-2.6.0/data/zookeeper` and **save**.
 
-6 - start zookeeper ` dev@slave-node:/opt/kafka_2.13-2.6.0$ zookeeper-server-start.sh  config/zookeeper.properties`.
+6 - start zookeeper ` dev@slave-node:/opt/kafka_2.13-2.6.0$ zookeeper-server-start.sh  config/zookeeper.properties`. or `dev@slave-node:~$ zookeeper-server-start.sh  /opt/kafka_2.13-2.6.0/config/zookeeper.properties`.
 
 7 - check if version-2 is created .
 ```sh
 dev@slave-node:/opt/kafka_2.13-2.6.0$ ls data/zookeeper/
 version-2
 ```
+8- Create **kafka folder** which holds **metadata** : `mkdir /opt/kafka_2.13-2.6.0/data/kafka`
+
+9- change `log.dirs` in `server.properties` file : `vim /opt/kafka_2.13-2.6.0/config/server.properties` and then `log.dirs=/opt/kafka_2.13-2.6.0/data/kafka` , and **save**
+
+10- start kafka servers : `kafka-server-start.sh /opt/kafka_2.13-2.6.0/config/server.properties`
+
+11- [install kafka tool](https://www.kafkatool.com/download.html) and connect to `localhost:2181`
