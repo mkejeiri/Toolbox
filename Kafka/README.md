@@ -213,3 +213,196 @@ version-2
 10- start kafka servers : `kafka-server-start.sh /opt/kafka_2.13-2.6.0/config/server.properties`
 
 11- [install kafka tool](https://www.kafkatool.com/download.html) and connect to `localhost:2181`
+
+
+# Windows 10 Insallation 
+
+1- [GET KAFKA](https://www.apache.org/dyn/closer.cgi?path=/kafka/2.6.0/kafka_2.13-2.6.0.tgz),    [see quick start](https://kafka.apache.org/quickstart)
+
+2- use the winrar  and put the folder [kafka_x.xx-x.x.x] in a `c:\` drive
+
+3- Add the  `c:\[kafka_x.xx-x.x.x]\bin\windows` to the Path environment variable
+
+4- Java 8 is required : Install it if not done yet. 
+
+5- inside  `c:\[kafka_x.xx-x.x.x]\` Create folder `data\logs` `data\zooKeeper`.
+
+6- Change the `dataDir=C:\[kafka_x.xx-x.x.x]\data\zookeeper` inside `C:\[kafka_x.xx-x.x.x]\config\zookeeper.properties` 
+
+7- Change the `log.dirs=C:\kafka_2.13-2.6.0\data\logs` inside `C:\[kafka_x.xx-x.x.x]\config\server.properties` 
+
+8- Start the ZooKeeper service : `zookeeper-server-start.bat C:\[kafka_x.xx-x.x.x]\config\zookeeper.properties`
+8- Start the Kafka broker service : `kafka-server-start.bat C:\[kafka_x.xx-x.x.x]\config\server.properties`
+
+> Soon, ZooKeeper will no longer be required by Apache Kafka.
+
+
+**Kafka Console Producer CLI**
+----
+
+- `kafka-console-producer.bat --broker-list 127.0.0.1:9092 --topic first_topic`
+```
+>hello there
+```
+- `kafka-console-producer.bat --broker-list 127.0.0.1:9092 --topic first_topic --producer-property acks=all`
+```
+>hi again how are
+>I thought you were sleeping
+```
+> `acks=all` the producer has to wait for **acknowledgment** from both the **leader** and **In-Sync/replicas partition** (zero loss data)
+
+- `kafka-console-producer.bat --broker-list 127.0.0.1:9092 --topic new_topic` : new_topic doesn't exist yet!
+```
+>hi there new_topic
+[2020-09-21 18:12:15,897] WARN [Producer clientId=console-producer] Error while fetching metadata with correlation id 3 : {new_topic=LEADER_NOT_AVAILABLE} (org.apache.kafka.clients.NetworkClient)
+>another message
+>
+```
+
+> If we go to broker console `[2020-09-21 18:12:15,894] INFO [KafkaApi-0] Auto creation of topic new_topic with 1 partitions and replication factor 1 is successful (kafka.server.KafkaApis)` : `new_topic` was created but the leader election for the partition is not happened yet! that why we get the exception/WARN `{new_topic=LEADER_NOT_AVAILABLE}`. The producer is able to recover from errors, i.e. the producer was able to produce the message afterward (e.g. we still get `hi there new_topic` to the partition). 
+
+
+**all kafka-console-producer.bat arguments**
+
+```ssh
+Missing required option(s) [bootstrap-server]
+Option                                   Description
+------                                   -----------
+--batch-size <Integer: size>             Number of messages to send in a single
+                                           batch if they are not being sent
+                                           synchronously. (default: 200)
+--bootstrap-server <String: server to    REQUIRED unless --broker-list
+  connect to>                              (deprecated) is specified. The server
+                                           (s) to connect to. The broker list
+                                           string in the form HOST1:PORT1,HOST2:
+                                           PORT2.
+--broker-list <String: broker-list>      DEPRECATED, use --bootstrap-server
+                                           instead; ignored if --bootstrap-
+                                           server is specified.  The broker
+                                           list string in the form HOST1:PORT1,
+                                           HOST2:PORT2.
+--compression-codec [String:             The compression codec: either 'none',
+  compression-codec]                       'gzip', 'snappy', 'lz4', or 'zstd'.
+                                           If specified without value, then it
+                                           defaults to 'gzip'
+--help                                   Print usage information.
+--line-reader <String: reader_class>     The class name of the class to use for
+                                           reading lines from standard in. By
+                                           default each line is read as a
+                                           separate message. (default: kafka.
+                                           tools.
+                                           ConsoleProducer$LineMessageReader)
+--max-block-ms <Long: max block on       The max time that the producer will
+  send>                                    block for during a send request
+                                           (default: 60000)
+--max-memory-bytes <Long: total memory   The total memory used by the producer
+  in bytes>                                to buffer records waiting to be sent
+                                           to the server. (default: 33554432)
+--max-partition-memory-bytes <Long:      The buffer size allocated for a
+  memory in bytes per partition>           partition. When records are received
+                                           which are smaller than this size the
+                                           producer will attempt to
+                                           optimistically group them together
+                                           until this size is reached.
+                                           (default: 16384)
+--message-send-max-retries <Integer>     Brokers can fail receiving the message
+                                           for multiple reasons, and being
+                                           unavailable transiently is just one
+                                           of them. This property specifies the
+                                           number of retires before the
+                                           producer give up and drop this
+                                           message. (default: 3)
+--metadata-expiry-ms <Long: metadata     The period of time in milliseconds
+  expiration interval>                     after which we force a refresh of
+                                           metadata even if we haven't seen any
+                                           leadership changes. (default: 300000)
+--producer-property <String:             A mechanism to pass user-defined
+  producer_prop>                           properties in the form key=value to
+                                           the producer.
+--producer.config <String: config file>  Producer config properties file. Note
+                                           that [producer-property] takes
+                                           precedence over this config.
+--property <String: prop>                A mechanism to pass user-defined
+                                           properties in the form key=value to
+                                           the message reader. This allows
+                                           custom configuration for a user-
+                                           defined message reader. Default
+                                           properties include:
+        parse.
+                                           key=true|false
+        key.separator=<key.
+                                           separator>
+        ignore.error=true|false
+--request-required-acks <String:         The required acks of the producer
+  request required acks>                   requests (default: 1)
+--request-timeout-ms <Integer: request   The ack timeout of the producer
+  timeout ms>                              requests. Value must be non-negative
+                                           and non-zero (default: 1500)
+--retry-backoff-ms <Integer>             Before each retry, the producer
+                                           refreshes the metadata of relevant
+                                           topics. Since leader election takes
+                                           a bit of time, this property
+                                           specifies the amount of time that
+                                           the producer waits before refreshing
+                                           the metadata. (default: 100)
+--socket-buffer-size <Integer: size>     The size of the tcp RECV size.
+                                           (default: 102400)
+--sync                                   If set message send requests to the
+                                           brokers are synchronously, one at a
+                                           time as they arrive.
+--timeout <Integer: timeout_ms>          If set and the producer is running in
+                                           asynchronous mode, this gives the
+                                           maximum amount of time a message
+                                           will queue awaiting sufficient batch
+                                           size. The value is given in ms.
+                                           (default: 1000)
+--topic <String: topic>                  REQUIRED: The topic id to produce
+                                           messages to.
+--version                                Display Kafka version.
+```
+
+**get the list of topics through zookeeper**
+
+
+```ssh
+kafka-topics --zookeeper 127.0.0.1:2181 --list
+#output
+first_topic
+new_topic
+second_topic
+```
+
+```ssh
+kafka-topics --zookeeper 127.0.0.1:2181 --topic new_topic --describe
+#output : new_topic has one partition (partition 0) and one replication factor
+Topic: new_topic        PartitionCount: 1       ReplicationFactor: 1    Configs:
+        Topic: new_topic        Partition: 0    Leader: 0       Replicas: 0     Isr: 0
+```
+**Changing the config new topic to have 3 partitions by default**
+- Go to `C:\[kafka_x.xx-x.x.x]\config\server.properties`  and update `num.partitions=3`
+- Stop the broker and start it: `kafka-server-start.sh /opt/kafka_2.13-2.6.0/config/server.properties`
+
+```ssh
+kafka-console-producer.bat --broker-list 127.0.0.1:9092 --topic third_topic --producer-property acks=all
+>hi there (WARN)
+[2020-09-21 21:17:10,647] WARN [Producer clientId=console-producer] Error while fetching metadata with correlation id 3 : {third_topic=LEADER_NOT_AVAILABLE} (org.apache.kafka.clients.NetworkClient)
+>Terminate batch job (Y/N)? y
+
+
+kafka-topics --zookeeper 127.0.0.1:2181 --list
+#output
+first_topic
+new_topic
+second_topic
+third_topic
+
+
+kafka-topics --zookeeper 127.0.0.1:2181 --topic third_topic --describe
+Topic: third_topic      PartitionCount: 3       ReplicationFactor: 1    Configs:
+        Topic: third_topic      Partition: 0    Leader: 0       Replicas: 0     Isr: 0
+        Topic: third_topic      Partition: 1    Leader: 0       Replicas: 0     Isr: 0
+        Topic: third_topic      Partition: 2    Leader: 0       Replicas: 0     Isr: 0
+```
+
+> **Best practices**: create topics before using them. 
+
