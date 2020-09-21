@@ -406,3 +406,579 @@ Topic: third_topic      PartitionCount: 3       ReplicationFactor: 1    Configs:
 
 > **Best practices**: create topics before using them. 
 
+
+
+**Kafka Console Consumer CLI**
+----
+The **consumer** intercepts only `new messages` and doesn't read all `topics` **messages** (i.e. not the one that occurs before), this a `default` **behaviour**.
+
+```ssh
+kafka-console-consumer.bat --bootstrap-server 127.0.0.1:9092 --topic  third_topic
+# output zero messages
+```
+
+
+**start consumer first and wait**
+```ssh
+kafka-console-consumer.bat --bootstrap-server 127.0.0.1:9092 --topic  third_topic
+# output: received new producer messages
+hi there
+another message
+get that one as well
+yes
+no
+```
+
+
+**start producer in a new console and type messages to be sent to third_topic**
+```ssh
+kafka-console-producer.bat --broker-list 127.0.0.1:9092 --topic third_topic --producer-property acks=all
+# messages to be sent to third_topic
+>hi there
+>another message
+>get that one as well
+>yes
+>no
+>
+```
+
+> we will see messages appears on the consumer console
+
+
+
+### Case : Consumer can see messages from the beginning
+
+**Consumer** receives all **producer messages** since the **beginning** and also the **new ones**.
+
+```ssh
+kafka-console-consumer.bat --bootstrap-server 127.0.0.1:9092 --topic  third_topic --from-beginning  
+# output: received all producer messages since the beginning and also the new ones
+hi there (WARN)
+get that one as well
+no
+hi there
+yes
+another message
+```
+
+
+####  All available option for kafka-console-consumer.bat
+```ssh
+kafka-console-consumer.bat
+
+This tool helps to read data from Kafka topics and outputs it to standard output.
+Option                                   Description
+------                                   -----------
+--bootstrap-server <String: server to    REQUIRED: The server(s) to connect to.
+  connect to>
+--consumer-property <String:             A mechanism to pass user-defined
+  consumer_prop>                           properties in the form key=value to
+                                           the consumer.
+--consumer.config <String: config file>  Consumer config properties file. Note
+                                           that [consumer-property] takes
+                                           precedence over this config.
+--enable-systest-events                  Log lifecycle events of the consumer
+                                           in addition to logging consumed
+                                           messages. (This is specific for
+                                           system tests.)
+--formatter <String: class>              The name of a class to use for
+                                           formatting kafka messages for
+                                           display. (default: kafka.tools.
+                                           DefaultMessageFormatter)
+--from-beginning                         If the consumer does not already have
+                                           an established offset to consume
+                                           from, start with the earliest
+                                           message present in the log rather
+                                           than the latest message.
+--group <String: consumer group id>      The consumer group id of the consumer.
+--help                                   Print usage information.
+--isolation-level <String>               Set to read_committed in order to
+                                           filter out transactional messages
+                                           which are not committed. Set to
+                                           read_uncommitted to read all
+                                           messages. (default: read_uncommitted)
+--key-deserializer <String:
+  deserializer for key>
+--max-messages <Integer: num_messages>   The maximum number of messages to
+                                           consume before exiting. If not set,
+                                           consumption is continual.
+--offset <String: consume offset>        The offset id to consume from (a non-
+                                           negative number), or 'earliest'
+                                           which means from beginning, or
+                                           'latest' which means from end
+                                           (default: latest)
+--partition <Integer: partition>         The partition to consume from.
+                                           Consumption starts from the end of
+                                           the partition unless '--offset' is
+                                           specified.
+--property <String: prop>                The properties to initialize the
+                                           message formatter. Default
+                                           properties include:
+        print.
+                                           timestamp=true|false
+        print.
+                                           key=true|false
+        print.
+                                           value=true|false
+        key.separator=<key.
+                                           separator>
+        line.separator=<line.
+                                           separator>
+        key.deserializer=<key.
+                                           deserializer>
+        value.
+                                           deserializer=<value.deserializer>
+                                           Users can also pass in customized
+                                           properties for their formatter; more
+                                           specifically, users can pass in
+                                           properties keyed with 'key.
+                                           deserializer.' and 'value.
+                                           deserializer.' prefixes to configure
+                                           their deserializers.
+--skip-message-on-error                  If there is an error when processing a
+                                           message, skip it instead of halt.
+--timeout-ms <Integer: timeout_ms>       If specified, exit if no message is
+                                           available for consumption for the
+                                           specified interval.
+--topic <String: topic>                  The topic id to consume on.
+--value-deserializer <String:
+  deserializer for values>
+--version                                Display Kafka version.
+--whitelist <String: whitelist>          Regular expression specifying
+                                           whitelist of topics to include for
+                                           consumption.
+```
+
+### Case : Consumers in group mode
+
+by **default** we can see only **new messages**.
+
+**start 'my-first-app-group' consumer group first and wait**
+```ssh
+kafka-console-consumer.bat --bootstrap-server 127.0.0.1:9092 --topic  third_topic --group my-first-app-group
+# output: received new producer messages
+hello group
+did receive that message
+?
+answer me
+hmmm
+
+
+```
+
+**start producer in a new console and type messages to be sent to third_topic**
+
+```ssh
+kafka-console-producer.bat --broker-list 127.0.0.1:9092 --topic third_topic --producer-property acks=all
+# messages to be sent to third_topic
+>hello group
+>did receive that message
+>?
+>answer me
+>hmmm
+>
+```
+
+####  Load balancing between consumer group
+
+*here we create three consumers group 'my-first-app-group'*. We have **three partitions** and each **consumer** group read from an **exclusive** **partition**!
+
+**start 'my-first-app-group' consumer first in new console and wait**
+```ssh
+kafka-console-consumer.bat --bootstrap-server 127.0.0.1:9092 --topic  third_topic --group my-first-app-group
+# output: received new producer messages
+3
+4
+8
+9
+12
+19
+```
+
+**start 'my-first-app-group' consumer group in another new console and wait**
+```ssh
+kafka-console-consumer.bat --bootstrap-server 127.0.0.1:9092 --topic  third_topic --group my-first-app-group
+# output: received new producer messages
+5
+6
+13
+14
+17
+18
+```
+
+**start 'my-first-app-group' consumer group in another new console and wait**
+```ssh
+kafka-console-consumer.bat --bootstrap-server 127.0.0.1:9092 --topic  third_topic --group my-first-app-group
+# output: received new producer messages
+1
+2
+7
+10
+11
+15
+16
+20
+```
+
+**start producer in a new console and type messages to be sent to third_topic**
+
+```ssh
+kafka-console-producer.bat --broker-list 127.0.0.1:9092 --topic third_topic --producer-property acks=all
+# messages to be sent to third_topic
+>1
+>2
+>3
+>4
+>5
+>6
+>7
+>8
+>9
+>10
+>11
+>12
+>13
+>14
+>15
+>16
+>17
+>18
+>19
+>20
+>
+```
+
+If a **consumer group** is **withdrawn** then the **messages** get **rebalanced** between the two remaining **partitions**.
+
+
+#### Groups and offset
+
+if we **run** `kafka-console-consumer.bat --bootstrap-server 127.0.0.1:9092 --topic  third_topic --group my-second-app-group --from-beginning`.
+we will **read all messages** from the **beginning**, but if we **re-run** it we will read **zero messages**, because the **offset** is been **committed** to last **read position**. only **new messages** get **read** (i.e. `--from-beginning` has no effect in the 2nd time).
+
+if we **stop the consumer group** and **keep sending** the **producer messages** and then **run** the `kafka-console-consumer.bat --bootstrap-server 127.0.0.1:9092 --topic  third_topic --group my-second-app-group` we will see **all new messages**.
+
+
+
+
+####  All available option for kafka-consumer-groups.bat
+
+
+```ssh
+Option                                  Description
+------                                  -----------
+--all-groups                            Apply to all consumer groups.
+--all-topics                            Consider all topics assigned to a
+                                          group in the `reset-offsets` process.
+--bootstrap-server <String: server to   REQUIRED: The server(s) to connect to.
+  connect to>
+--by-duration <String: duration>        Reset offsets to offset by duration
+                                          from current timestamp. Format:
+                                          'PnDTnHnMnS'
+--command-config <String: command       Property file containing configs to be
+  config property file>                   passed to Admin Client and Consumer.
+--delete                                Pass in groups to delete topic
+                                          partition offsets and ownership
+                                          information over the entire consumer
+                                          group. For instance --group g1 --
+                                          group g2
+--delete-offsets                        Delete offsets of consumer group.
+                                          Supports one consumer group at the
+                                          time, and multiple topics.
+--describe                              Describe consumer group and list
+                                          offset lag (number of messages not
+                                          yet processed) related to given
+                                          group.
+--dry-run                               Only show results without executing
+                                          changes on Consumer Groups.
+                                          Supported operations: reset-offsets.
+--execute                               Execute operation. Supported
+                                          operations: reset-offsets.
+--export                                Export operation execution to a CSV
+                                          file. Supported operations: reset-
+                                          offsets.
+--from-file <String: path to CSV file>  Reset offsets to values defined in CSV
+                                          file.
+--group <String: consumer group>        The consumer group we wish to act on.
+--help                                  Print usage information.
+--list                                  List all consumer groups.
+--members                               Describe members of the group. This
+                                          option may be used with '--describe'
+                                          and '--bootstrap-server' options
+                                          only.
+                                        Example: --bootstrap-server localhost:
+                                          9092 --describe --group group1 --
+                                          members
+--offsets                               Describe the group and list all topic
+                                          partitions in the group along with
+                                          their offset lag. This is the
+                                          default sub-action of and may be
+                                          used with '--describe' and '--
+                                          bootstrap-server' options only.
+                                        Example: --bootstrap-server localhost:
+                                          9092 --describe --group group1 --
+                                          offsets
+--reset-offsets                         Reset offsets of consumer group.
+                                          Supports one consumer group at the
+                                          time, and instances should be
+                                          inactive
+                                        Has 2 execution options: --dry-run
+                                          (the default) to plan which offsets
+                                          to reset, and --execute to update
+                                          the offsets. Additionally, the --
+                                          export option is used to export the
+                                          results to a CSV format.
+                                        You must choose one of the following
+                                          reset specifications: --to-datetime,
+                                          --by-period, --to-earliest, --to-
+                                          latest, --shift-by, --from-file, --
+                                          to-current.
+                                        To define the scope use --all-topics
+                                          or --topic. One scope must be
+                                          specified unless you use '--from-
+                                          file'.
+--shift-by <Long: number-of-offsets>    Reset offsets shifting current offset
+                                          by 'n', where 'n' can be positive or
+                                          negative.
+--state [String]                        When specified with '--describe',
+                                          includes the state of the group.
+                                        Example: --bootstrap-server localhost:
+                                          9092 --describe --group group1 --
+                                          state
+                                        When specified with '--list', it
+                                          displays the state of all groups. It
+                                          can also be used to list groups with
+                                          specific states.
+                                        Example: --bootstrap-server localhost:
+                                          9092 --list --state stable,empty
+                                        This option may be used with '--
+                                          describe', '--list' and '--bootstrap-
+                                          server' options only.
+--timeout <Long: timeout (ms)>          The timeout that can be set for some
+                                          use cases. For example, it can be
+                                          used when describing the group to
+                                          specify the maximum amount of time
+                                          in milliseconds to wait before the
+                                          group stabilizes (when the group is
+                                          just created, or is going through
+                                          some changes). (default: 5000)
+--to-current                            Reset offsets to current offset.
+--to-datetime <String: datetime>        Reset offsets to offset from datetime.
+                                          Format: 'YYYY-MM-DDTHH:mm:SS.sss'
+--to-earliest                           Reset offsets to earliest offset.
+--to-latest                             Reset offsets to latest offset.
+--to-offset <Long: offset>              Reset offsets to a specific offset.
+--topic <String: topic>                 The topic whose consumer group
+                                          information should be deleted or
+                                          topic whose should be included in
+                                          the reset offset process. In `reset-
+                                          offsets` case, partitions can be
+                                          specified using this format: `topic1:
+                                          0,1,2`, where 0,1,2 are the
+                                          partition to be included in the
+                                          process. Reset-offsets also supports
+                                          multiple topic inputs.
+--verbose                               Provide additional information, if
+                                          any, when describing the group. This
+                                          option may be used with '--
+                                          offsets'/'--members'/'--state' and
+                                          '--bootstrap-server' options only.
+                                        Example: --bootstrap-server localhost:
+                                          9092 --describe --group group1 --
+                                          members --verbose
+--version                               Display Kafka version.
+
+```
+
+
+
+**Kafka-consumer-groups CLI**
+----
+
+``` ssh
+Kafka-consumer-groups --bootstrap-server localhost:9092 --list
+#output
+my-first-app-group
+my-second-app-group
+```
+
+``` ssh
+Kafka-consumer-groups --bootstrap-server localhost:9092 --describe --group  my-first-app-group
+#output
+Consumer group 'my-first-app-group' has no active members.
+
+GROUP              TOPIC           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID     HOST            CLIENT-ID
+my-first-app-group third_topic     2          81              81              0               -               -               -
+my-first-app-group third_topic     1          60              63              3               -               -               -
+my-first-app-group third_topic     0          78              82              4               -               -               -
+```
+
+**note that** :
+- **3 partitions** for **TOPIC** `third_topic`: 0,1 & 2
+- `CURRENT-OFFSET` is the read position in each partition
+- `LOG-END-OFFSET` is last position to read
+- `LAG` : how many position are available for read per partition (i.e. **number of catch-up's**)
+
+
+####  All available option for kafka-consumer-groups.bat
+```ssh
+List all groups, describe a consumer group delete a consumer group, delete consumer group info, or reset consumer group offsets.
+Option                                  Description
+------                                  -----------
+--all-groups                            Apply to all consumer groups.
+--all-topics                            Consider all topics assigned to a
+                                          group in the `reset-offsets` process.
+--bootstrap-server <String: server to   REQUIRED: The server(s) to connect to.
+  connect to>
+--by-duration <String: duration>        Reset offsets to offset by duration
+                                          from current timestamp. Format:
+                                          'PnDTnHnMnS'
+--command-config <String: command       Property file containing configs to be
+  config property file>                   passed to Admin Client and Consumer.
+--delete                                Pass in groups to delete topic
+                                          partition offsets and ownership
+                                          information over the entire consumer
+                                          group. For instance --group g1 --
+                                          group g2
+--delete-offsets                        Delete offsets of consumer group.
+                                          Supports one consumer group at the
+                                          time, and multiple topics.
+--describe                              Describe consumer group and list
+                                          offset lag (number of messages not
+                                          yet processed) related to given
+                                          group.
+--dry-run                               Only show results without executing
+                                          changes on Consumer Groups.
+                                          Supported operations: reset-offsets.
+--execute                               Execute operation. Supported
+                                          operations: reset-offsets.
+--export                                Export operation execution to a CSV
+                                          file. Supported operations: reset-
+                                          offsets.
+--from-file <String: path to CSV file>  Reset offsets to values defined in CSV
+                                          file.
+--group <String: consumer group>        The consumer group we wish to act on.
+--help                                  Print usage information.
+--list                                  List all consumer groups.
+--members                               Describe members of the group. This
+                                          option may be used with '--describe'
+                                          and '--bootstrap-server' options
+                                          only.
+                                        Example: --bootstrap-server localhost:
+                                          9092 --describe --group group1 --
+                                          members
+--offsets                               Describe the group and list all topic
+                                          partitions in the group along with
+                                          their offset lag. This is the
+                                          default sub-action of and may be
+                                          used with '--describe' and '--
+                                          bootstrap-server' options only.
+                                        Example: --bootstrap-server localhost:
+                                          9092 --describe --group group1 --
+                                          offsets
+--reset-offsets                         Reset offsets of consumer group.
+                                          Supports one consumer group at the
+                                          time, and instances should be
+                                          inactive
+                                        Has 2 execution options: --dry-run
+                                          (the default) to plan which offsets
+                                          to reset, and --execute to update
+                                          the offsets. Additionally, the --
+                                          export option is used to export the
+                                          results to a CSV format.
+                                        You must choose one of the following
+                                          reset specifications: --to-datetime,
+                                          --by-period, --to-earliest, --to-
+                                          latest, --shift-by, --from-file, --
+                                          to-current.
+                                        To define the scope use --all-topics
+                                          or --topic. One scope must be
+                                          specified unless you use '--from-
+                                          file'.
+--shift-by <Long: number-of-offsets>    Reset offsets shifting current offset
+                                          by 'n', where 'n' can be positive or
+                                          negative.
+--state [String]                        When specified with '--describe',
+                                          includes the state of the group.
+                                        Example: --bootstrap-server localhost:
+                                          9092 --describe --group group1 --
+                                          state
+                                        When specified with '--list', it
+                                          displays the state of all groups. It
+                                          can also be used to list groups with
+                                          specific states.
+                                        Example: --bootstrap-server localhost:
+                                          9092 --list --state stable,empty
+                                        This option may be used with '--
+                                          describe', '--list' and '--bootstrap-
+                                          server' options only.
+--timeout <Long: timeout (ms)>          The timeout that can be set for some
+                                          use cases. For example, it can be
+                                          used when describing the group to
+                                          specify the maximum amount of time
+                                          in milliseconds to wait before the
+                                          group stabilizes (when the group is
+                                          just created, or is going through
+                                          some changes). (default: 5000)
+--to-current                            Reset offsets to current offset.
+--to-datetime <String: datetime>        Reset offsets to offset from datetime.
+                                          Format: 'YYYY-MM-DDTHH:mm:SS.sss'
+--to-earliest                           Reset offsets to earliest offset.
+--to-latest                             Reset offsets to latest offset.
+--to-offset <Long: offset>              Reset offsets to a specific offset.
+--topic <String: topic>                 The topic whose consumer group
+                                          information should be deleted or
+                                          topic whose should be included in
+                                          the reset offset process. In `reset-
+                                          offsets` case, partitions can be
+                                          specified using this format: `topic1:
+                                          0,1,2`, where 0,1,2 are the
+                                          partition to be included in the
+                                          process. Reset-offsets also supports
+                                          multiple topic inputs.
+--verbose                               Provide additional information, if
+                                          any, when describing the group. This
+                                          option may be used with '--
+                                          offsets'/'--members'/'--state' and
+                                          '--bootstrap-server' options only.
+                                        Example: --bootstrap-server localhost:
+                                          9092 --describe --group group1 --
+                                          members --verbose
+--version                               Display Kafka version.
+```
+
+
+**Reset the Offsets**
+----
+the **purpose** is to make the **consumer group** to **read the data** from any **offset/position**.
+
+the following command **offsets** the **consumer group** `my-first-app-group` to **zero** read position (`--to-earliest`). 
+
+```
+Kafka-consumer-groups --bootstrap-server localhost:9092 --group  my-first-app-group --reset-offsets --to-earliest --execute --topic third_topic
+#output :
+GROUP                          TOPIC                          PARTITION  NEW-OFFSET
+my-first-app-group             third_topic                    0          0
+my-first-app-group             third_topic                    1          0
+my-first-app-group             third_topic                    2          0
+```
+
+if we **run** `kafka-console-consumer.bat --bootstrap-server 127.0.0.1:9092 --topic  third_topic --group my-first-app-group` we will **see** all **data all over again**. 
+
+
+#### Option : shift-by '-2'
+
+> **backward shift-by 2** on each **partition** (i.e **2x partition numbers**)
+
+> use a **positive number** for a **forward shift-by**.
+
+```
+Kafka-consumer-groups --bootstrap-server localhost:9092 --group  my-first-app-group --reset-offsets --shift-by -2 --execute --topic third_topic
+#output :
+GROUP                          TOPIC                          PARTITION  NEW-OFFSET
+my-first-app-group             third_topic                    0          97
+my-first-app-group             third_topic                    1          72
+my-first-app-group             third_topic                    2          92
+```
+**note** if we run ` kafka-console-consumer.bat --bootstrap-server 127.0.0.1:9092 --topic  third_topic --group my-first-app-group` we will see the **last 6 messages** (i.e. **backward shift-by 2** on each **partition** : **2x3**) 
