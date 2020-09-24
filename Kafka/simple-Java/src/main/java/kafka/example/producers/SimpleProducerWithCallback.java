@@ -30,6 +30,7 @@ public class SimpleProducerWithCallback {
                     new ProducerRecord<String, String>("three_topic", "hello partition " + Integer.toString(i));
 
             // send data - asynchronous
+            //producer.send(record, (RecordMetadata recordMetadata, Exception e) -> { //or shorthand syntax next
             producer.send(record, (recordMetadata, e) -> {
                 // executes every time a record is successfully sent or an exception is thrown
                 if (e == null) {

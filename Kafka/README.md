@@ -989,6 +989,8 @@ my-first-app-group             third_topic                    2          92
 ----
 Throughout this project, we use the following **maven** dependencies for **Kafka client** and **logging** ([see full pom file](/simple-Java/pom.xml)).
 
+[learn more about producer config](https://kafka.apache.org/documentation/#producerconfigs)
+
 ```xml
 <dependencies>
 	<!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients -->
@@ -1037,10 +1039,52 @@ producer.send(record);
 5- flush and close producer
 
 ```java
-// flush data
+// flush data in order to to wait for the data to be sent (send data is asynchronous!)
 producer.flush();
-//close producer
+// or alternatively: flush and close producer
 producer.close();
 ```
 see full [SimpleProducer.java](simple-Java/src/main/java/kafka/example/producers/SimpleProducer.java)
 
+**Simple Java producer with callback**
+----
+The idea here is to understand where the `message` was **produced**, and if it was **produced correctly**, and what's the `offset` **value** and the `partition` **number**.
+
+In previously described *fouth step* , the `send` **method** takes an extra **argument** which is a **callback**. 
+
+```java
+producer.send(record, new Callback() {
+// on completion, executes every time, a record being successfully sent or an exception is thrown
+  public void onCompletion(RecordMetadata recordMetadata, Exception e) {
+      if (e == null) {
+          // the record was successfully sent
+          logger.info("Received new metadata. \n" +
+    "Topic:" + recordMetadata.topic() + "\n" +
+    "Partition: " + recordMetadata.partition() + "\n" +
+    "Offset: " + recordMetadata.offset() + "\n" +
+    "Timestamp: " + recordMetadata.timestamp());
+      } else {
+          logger.error("Error while producing", e);
+      }
+  }
+});
+```
+or lambda syntax
+
+```java
+  // executes every time a record is successfully sent or an exception is thrown
+  //producer.send(record, (RecordMetadata recordMetadata, Exception e) -> { //or shorthand syntax next
+ producer.send(record, (recordMetadata, e) -> {
+  if (e == null) {
+      // the record was successfully sent
+      logger.info("Received new metadata. \n" +
+              "Topic:" + recordMetadata.topic() + "\n" +
+              "Partition: " + recordMetadata.partition() + "\n" +
+              "Offset: " + recordMetadata.offset() + "\n" +
+              "Timestamp: " + recordMetadata.timestamp());
+  } else {
+      logger.error("Error while producing", e);
+  }
+});
+```
+see full [SimpleProducerWithCallback.java](simple-Java/src/main/java/kafka/example/producers/SimpleProducerWithCallback.java)

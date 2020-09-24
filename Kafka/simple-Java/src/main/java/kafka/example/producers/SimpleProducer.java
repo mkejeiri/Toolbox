@@ -26,9 +26,9 @@ public class SimpleProducer {
         // send data - asynchronous
         producer.send(record);
 
-        // flush data
+        // flush data in order to to wait for the data to be sent (send data is asynchronous!)
         producer.flush();
-        // flush and close producer
+        // or alternatively: flush and close producer
         producer.close();
 
     }
