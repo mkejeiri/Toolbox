@@ -1,4 +1,4 @@
-package kafka.example;
+package kafka.example.consumers;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -10,14 +10,15 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Properties;
-public class SimpleConsumer {
+
+public class SimpleConsumerGroup {
     public static void main(String[] args) {
 
-        Logger logger = LoggerFactory.getLogger(SimpleConsumer.class.getName());
+        Logger logger = LoggerFactory.getLogger(SimpleConsumerGroup.class.getName());
 
         final String bootstrapServers = "127.0.0.1:9092";
-        final String groupId = "mygroup-java-client";
-        final String topic = "third_topic";
+        final String groupId = "simple-fifth-group";
+        final String topic = "first_topic";
 
         // create consumer configs
         Properties properties = new Properties();
