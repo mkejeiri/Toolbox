@@ -983,3 +983,64 @@ my-first-app-group             third_topic                    1          72
 my-first-app-group             third_topic                    2          92
 ```
 **note** if we run ` kafka-console-consumer.bat --bootstrap-server 127.0.0.1:9092 --topic  third_topic --group my-first-app-group` we will see the **last 6 messages** (i.e. **backward shift-by 2** on each **partition** : **2x3**) 
+
+
+# Kafka Java client
+----
+Throughout this project, we use the following **maven** dependencies for **Kafka client** and **logging** ([see full pom file](/simple-Java/pom.xml)).
+
+```xml
+<dependencies>
+	<!-- https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients -->
+	<dependency>
+		<groupId>org.apache.kafka</groupId>
+		<artifactId>kafka-clients</artifactId>
+		<version>2.0.0</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
+	<dependency>
+		<groupId>org.slf4j</groupId>
+		<artifactId>slf4j-simple</artifactId>
+		<version>1.7.25</version>
+	</dependency>
+</dependencies>
+```
+
+**Simple Java producer**
+----
+1- Create Producer properties
+```java
+final String bootstrapServers = "127.0.0.1:9092";
+
+Properties properties = new Properties();
+properties.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+properties.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+properties.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+```
+
+2- create the producer
+
+```java
+KafkaProducer<String, String> producer = new KafkaProducer<String, String>(properties);
+```
+3- create a producer record
+
+```java
+ProducerRecord<String, String> record =
+         new ProducerRecord<String, String>("first_topic", "hello first topic");
+```
+
+4- send data - asynchronous
+```java
+producer.send(record);
+```
+5- flush and close producer
+
+```java
+// flush data
+producer.flush();
+//close producer
+producer.close();
+```
+see full [SimpleProducer.java](simple-Java/src/main/java/kafka/example/producers/SimpleProducer.java)
+
