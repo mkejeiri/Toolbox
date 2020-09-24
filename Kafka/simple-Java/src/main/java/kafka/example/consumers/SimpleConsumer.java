@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Properties;
 public class SimpleConsumer {
     public static void main(String[] args) {
@@ -16,7 +17,7 @@ public class SimpleConsumer {
         Logger logger = LoggerFactory.getLogger(SimpleConsumer.class.getName());
 
         final String bootstrapServers = "127.0.0.1:9092";
-        final String groupId = "mygroup-java-client1";
+        final String groupId = "mygroup-java-client";
         final String topic = "third_topic";
 
         // create consumer configs
@@ -32,11 +33,16 @@ public class SimpleConsumer {
 
         // subscribe consumer to our topic(s)
         consumer.subscribe(Arrays.asList(topic));
+        //OR all topics
+        //consumer.subscribe(Arrays.asList("first_topic","second_topic","third_topic","fourth_topic"));
+        //or Alternatively subscribe to one topic
+        //consumer.subscribe(Collections.singleton(topic));
 
         // poll for new data
         while(true){
             ConsumerRecords<String, String> records =
-                    consumer.poll(Duration.ofMillis(100)); // new in Kafka 2.0.0
+                    //poll with a timeout in milliseconds! with a duration object!
+                    consumer.poll(Duration.ofMillis(100));
 
             for (ConsumerRecord<String, String> record : records){
                 logger.info("Key: " + record.key() + ", Value: " + record.value());

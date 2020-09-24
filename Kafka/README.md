@@ -987,9 +987,12 @@ my-first-app-group             third_topic                    2          92
 
 # Kafka Java client
 ----
+
+## Kafka Java Producers
+----
 Throughout this project, we use the following **maven** dependencies for **Kafka client** and **logging** ([see full pom file](/simple-Java/pom.xml)).
 
-[learn more about producer config](https://kafka.apache.org/documentation/#producerconfigs)
+[Learn more about producer config](https://kafka.apache.org/documentation/#producerconfigs)
 
 ```xml
 <dependencies>
@@ -1167,3 +1170,62 @@ public class SimpleProducerWithKeys {
 }
 
 ```
+
+## Kafka Java Consumers
+in this project, we use the same **maven** dependencies for **Kafka client** and **logging**  as previously mentioned in producers section([see full pom file](/simple-Java/pom.xml)).
+
+`ConsumerConfig.AUTO_OFFSET_RESET_CONFIG values` : 
+
+- `earliest`: read from the beginining.
+- `latest` : read only the new message.
+- `none` : will throw an error.
+
+[Learn more about consumer config](https://kafka.apache.org/documentation/#consumerconfigs)
+
+**Three steps to follow**:
+1. **create** `consumer` **configs**
+```java
+ Properties properties = new Properties();
+        properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+```
+1. **create** `consumer` 
+```java
+KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(properties);
+```
+1. **subscribe** `consumer` to one `topic`  or several `topics`  
+```java
+// subscribe consumer to our topic(s)
+final String topic = "third_topic";
+consumer.subscribe(Arrays.asList(topic));
+//OR all topics
+//consumer.subscribe(Arrays.asList("first_topic","second_topic","third_topic","fourth_topic"));
+```
+
+**OR Alternatively** subscribe to only **one** `topic`
+```java
+consumer.subscribe(Collections.singleton(topic)); 
+```
+1. **poll** for new `data` 
+```java
+//The consumer does not get the data until it asks for that data, we'll have a true, while true loop (this is a bad in programming, .. to break out of the loop,..)
+       while(true){
+            ConsumerRecords<String, String> records =
+					//poll with a timeout in milliseconds! with a duration object!
+                    consumer.poll(Duration.ofMillis(100)); 
+
+            for (ConsumerRecord<String, String> record : records){
+                logger.info("Key: " + record.key() + ", Value: " + record.value());
+                logger.info("Partition: " + record.partition() + ", Offset:" + record.offset());
+            }
+        }
+```
+> the **consumer** read all **messages sequentially** from `partition` 0 and then 1 , ..., it reads messages as they arrive.
+
+see full [SimpleConsumer.java](simple-Java/src/main/java/kafka/example/consumers/SimpleConsumer.java)
+
+
+
