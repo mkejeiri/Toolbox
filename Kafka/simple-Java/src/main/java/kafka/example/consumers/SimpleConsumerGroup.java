@@ -17,7 +17,7 @@ public class SimpleConsumerGroup {
         Logger logger = LoggerFactory.getLogger(SimpleConsumerGroup.class.getName());
 
         final String bootstrapServers = "127.0.0.1:9092";
-        final String groupId = "simple-fifth-group";
+        final String groupId = "my-group-java-client";
         final String topic = "first_topic";
 
         // create consumer configs

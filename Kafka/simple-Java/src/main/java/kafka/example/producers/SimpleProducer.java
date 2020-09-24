@@ -21,7 +21,7 @@ public class SimpleProducer {
 
         // create a producer record
         ProducerRecord<String, String> record =
-                new ProducerRecord<String, String>("first_topic", "hello first topic");
+                new ProducerRecord<String, String>("third_topic", "hello first topic");
 
         // send data - asynchronous
         producer.send(record);

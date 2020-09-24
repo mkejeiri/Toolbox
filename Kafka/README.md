@@ -74,7 +74,7 @@
 **Partition Leader**
 ----
 - Only once **broker** can be **leader** for a `partition` at any given time
-- Only the that **leader** can **receive and serve** the `data` for a `partition`
+- Only that **leader** can **receive and serve** the `data` for a `partition`
 - The **other brokers** will **synchronize** the `data`
 - As a result, each `partition` has one and only one **leader at any given moment** and **multiple ISR** (In-Sync Replica's) 
 ![pic](images/partition-leader.jpg)
@@ -85,10 +85,10 @@
 - **Producers** `write` data into `topics` (which made of `partitions`)
 - **Producers** automatically **know** to which **broker** and `partition` to **write to**
 - In case of **broker failures**, **producers** will automatically **recover**
-- **Producers** can choose **acknowledgemen** of **data writes in 3 ways**: 
+- **Producers** can choose **acknowledgement** of **data writes in 3 ways**: 
 	- `acks=0` : `producer` won't wait for **acknowledgement**
-	- `acks=1` : `producer` will wait for a **leader acknowledgement** (*limited data loss*)
-	- `acks=all` :`producer` will wait for a **leader & replicas acknowledgement**  (*no data loss*)
+	- `acks=1` : `producer` will wait for the **leader acknowledgement** (*limited data loss*)
+	- `acks=all` :`producer` will wait for the **leader & replicas acknowledgement**  (*no data loss*)
 	
 ![pic](images/producers.jpg)
 
@@ -114,9 +114,8 @@
 **Consumer Group**
 ----	
 
-- **Consumers**	**read data** in consumer **groups**
-- Each **consumer** within a **group** reads from **exclusive partitions**
-- If you have more consumer than **partition**, some **consumer** will be **inactive**
+- **Consumers**	**read data** in consumer **groups**	
+- Each **consumer** within a **group** reads from an **exclusive partitions**
 ![pic](images/consumer-groups.jpg)	
 
 
@@ -130,7 +129,7 @@
 ----	
 
 - `Kafka` stores the `offsets` at which a **consumer group** has been reading
-- The `offsets` committed live in a Kafka `topic` named `___consumer_offsets`
+- The `offsets` committed live in a Kafka `topic` named `__consumer_offsets`
 - When a `consumer` in a `group` has **processed data** received from `kafka`, **_it should commit the offsets!_**
 - If a `consumer` **dies**, it will be able to **read back** from where it **left off** thanks to the **committed consumer** `offsets`!
  ![pic](images/consumer-offsets.jpg)	
@@ -146,18 +145,18 @@
 	- If the processing goes wrong, the message will be **lost** (it won't be read again)
 - **At least once** :
 	- `offsets` are **committed** after the **message** is **processed**.
-	- If the **processing** goes wrong, the `message` will be **read again**.
-	- This can result in **duplicate processing** of messages if the processing is not `idempotent`.
+	- If the message **processing** goes wrong, the `message` will be **read again**.
+	- This can result in **duplicate messages processing** if the processing is not `idempotent`.
 - **Exactly once**:
 	- Can be **achieved** for **Kafka** => **Kafka workflow** using `Kafka Streams Api`
 	- For **Kafka** => **External System workflows**, use an `idempotent consumer`.
 	
-	> `idempotent` : means processing again the messages won't have any impact on the systems.
+	> `idempotent` : means processing the messages again won't have any impact on the systems.
 	
 	
 **Kafka Broker Discovery**
 ----	
-- Every Kafka broker is also called a `bootstrap server`.
+- Every **Kafka broker** is also called a `bootstrap server`.
 - Since each `broker` already **knows** about all **others brokers**, `topics` and `partitions` (`metadata`), this means that we need to **connect** only to **one broker** and then we will be **connected** to the entire **cluster**.
 	
  ![pic](images/broker-discovery.jpg)
@@ -171,7 +170,7 @@
 - `Kafka` **CANNOT work without Zookeeper**
 - It **operates** by design with an **odd number** (3,5,7)
 - It has a **leader** that handles `writes`, and **followers** (i.e. rest of the servers) that handles `reads` only.
-- Zookeeper **does NOT store** `consumer offset` anymore since `Kafka V0.10+`
+- **Zookeeper does NOT store** `consumer offset` anymore since `Kafka V0.10+`
   ![pic](images/zookeeper.jpg)
  
 **Kafka Guarantees**
@@ -967,6 +966,21 @@ my-first-app-group             third_topic                    2          0
 
 if we **run** `kafka-console-consumer.bat --bootstrap-server 127.0.0.1:9092 --topic  third_topic --group my-first-app-group` we will **see** all **data all over again**. 
 
+or 
+`Kafka-consumer-groups --bootstrap-server localhost:9092 --group  my-first-app-group --reset-offsets --to-offset 0 --execute --topic third_topic`
+
+**Check out the** `LAG`
+
+```
+Kafka-consumer-groups --bootstrap-server localhost:9092 --group  my-first-app-group --describe
+
+GROUP               TOPIC           PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                     HOST            CLIENT-ID
+my-first-app-group third_topic     0          0              59              59               consumer-1-0a14ad09-db13-4b00-b717-7cf7a669d04c /192.168.0.156  consumer-1
+my-first-app-group third_topic     1          0              76              76               consumer-1-0a14ad09-db13-4b00-b717-7cf7a669d04c /192.168.0.156  consumer-1
+my-first-app-group third_topic     2          0              10              10               consumer-1-0a14ad09-db13-4b00-b717-7cf7a669d04c /192.168.0.156  consumer-1
+
+```
+
 
 #### Option : shift-by '-2'
 
@@ -990,7 +1004,7 @@ my-first-app-group             third_topic                    2          92
 
 ## Kafka Java Producers
 ----
-Throughout this project, we use the following **maven** dependencies for **Kafka client** and **logging** ([see full pom file](/simple-Java/pom.xml)).
+Throughout this project, we use the following **maven** dependencies for **Kafka client** and **logging** ([see full pom file](/Kafka/simple-Java/pom.xml)).
 
 [Learn more about producer config](https://kafka.apache.org/documentation/#producerconfigs)
 
@@ -1172,7 +1186,7 @@ public class SimpleProducerWithKeys {
 ```
 
 ## Kafka Java Consumers
-in this project, we use the same **maven** dependencies for **Kafka client** and **logging**  as previously mentioned in producers section([see full pom file](/simple-Java/pom.xml)).
+in this project, we use the same **maven** dependencies for **Kafka client** and **logging**  as previously mentioned in producers section([see full pom file](/Kafka/simple-Java/pom.xml) ).
 
 `ConsumerConfig.AUTO_OFFSET_RESET_CONFIG values` : 
 
@@ -1228,4 +1242,53 @@ consumer.subscribe(Collections.singleton(topic));
 see full [SimpleConsumer.java](simple-Java/src/main/java/kafka/example/consumers/SimpleConsumer.java)
 
 
+**Simple Java Consumer Group**
+-----
 
+see full [SimpleConsumerGroup.java](simple-Java/src/main/java/kafka/example/consumers/SimpleConsumerGroup.java)
+
+**Note** : If we want our **consumer** to **read** from the **beginning again**, we either have to **reset** the `groupId` as we did before through the **CLI**, 
+e.g. `Kafka-consumer-groups --bootstrap-server localhost:9092 --group  mygroup-java-client --reset-offsets --to-offset 0 --execute --topic third_topic` **or** we **change** the `groupId` (i.e. use a different group name than `mygroup-java-client`)  in java client consumer. 
+
+if we **run another instance** of `SimpleConsumerGroup` the **group** will get **rebalanced**, i.e. the `partitions` get **re-assigned** to each **running instances** and each `consumer group` will **read only** from the `partition(s)` assigned to it.
+
+
+```
+[main] INFO org.apache.kafka.clients.consumer.internals.AbstractCoordinator - [Consumer clientId=consumer-1, groupId=my-group-java-client] Attempt to heartbeat failed since group is rebalancing
+[main] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator - [Consumer clientId=consumer-1, groupId=my-group-java-client] Revoking previously assigned partitions [first_topic-0, first_topic-1, first_topic-2]
+[main] INFO org.apache.kafka.clients.consumer.internals.AbstractCoordinator - [Consumer clientId=consumer-1, groupId=my-group-java-client] (Re-)joining group
+[main] INFO org.apache.kafka.clients.consumer.internals.AbstractCoordinator - [Consumer clientId=consumer-1, groupId=my-group-java-client] Successfully joined group with generation 2
+[main] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator - [Consumer clientId=consumer-1, groupId=my-group-java-client] Setting newly assigned partitions [first_topic-2]
+```
+
+> Whenever there is a change (i.e. **instance** Terminated or Added) on the number of **running instances**  of the **consumer group** for a **specific group**, the (specific) group get **rebalanced**, i.e. **partitions** get re-assigned to each **running instances** of the **specific group**.
+
+
+
+**Simple Java Consumer Group - Thread**
+-----
+
+To avoid the infinite `while` `true` **loop** (e.g. previously used in [SimpleConsumerGroup.java](simple-Java/src/main/java/kafka/example/consumers/SimpleConsumerGroup.java) ) we will leverage the **threads** which is a better way of **shutting down** our app.
+we'll have our consumer in a thread, hence the use of `public class ConsumerRunnable implements Runnable...`.
+
+see full [SimpleConsumerWithThread.java](simple-Java/src/main/java/kafka/example/consumers/SimpleConsumerWithThread.java)
+
+note that `ConsumerRunnable` class has a `run` method to consume the messages, and `shutdown()` method to stop the thread.
+
+
+**Simple Java Consumer Assign Seek**
+-----
+**Assign and Seek** is another way of writing a **consumer app** :
+- create a **consumer**, but this time, we actually don't want to use the group ID
+- we don't want to **subscribe** to **topics**, we want to stay wherever we want to read from.
+
+This is two different kind of **APIs**, **assign** and **seek** are mostly used to **replay data** or **fetch** a **specific message** from **specific** `partition` in **specific** `topic` on a **specific** `offset`.
+
+
+see full [SimpleConsumerAssignSeek.java](simple-Java/src/main/java/kafka/example/consumers/SimpleConsumerAssignSeek.java)
+
+
+**Client bi-directional compatibility**
+-----
+
+**Kafka clients** and **Kafka brokers** have a **bi-directional compatibility** feature,  API calls are now **versioned** (*introduced for Kafka 0.10.2 in July 2017*), this  means that an **older client**, can **talk** to a **newer broker**, Alternatively, a **newer client** can **talk** to an **older broker**. So **Kafka version** and **Kafka client version** can be **different** and still **talk** to each others, we should **always** stick to the **latest client library** version. 

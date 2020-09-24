@@ -1,4 +1,5 @@
 package kafka.example.consumers;
+
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -18,7 +19,8 @@ public class SimpleConsumerWithThread {
         new SimpleConsumerWithThread().run();
     }
 
-    private SimpleConsumerWithThread() {}
+    private SimpleConsumerWithThread() {
+    }
 
     private void run() {
         Logger logger = LoggerFactory.getLogger(SimpleConsumerWithThread.class.getName());
@@ -46,17 +48,38 @@ public class SimpleConsumerWithThread {
         // add a shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.info("Caught shutdown hook");
+            //give us the ability to shut down our consumer inside myConsumerRunnable thread
             ((ConsumerRunnable) myConsumerRunnable).shutdown();
             try {
+                //we make sure that the app doesn't exist too quickly
+                // and wait until consumer and the thread shutdown properly
                 latch.await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             logger.info("Application has exited");
+        }));
+        //Alternative without lambda
+        /*
+         // add a shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                logger.info("Caught shutdown hook");
+                //give us the ability to shut down our consumer inside myConsumerRunnable thread
+                ((ConsumerRunnable) myConsumerRunnable).shutdown();
+                try {
+                    latch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                logger.info("Application has exited");
+            }
         }
+        */
 
-        ));
-
+        // we don't want our application to exit right away, we'll do latch.await()
+        // which makes us wait all the way, until the application is completed, this throw an InterruptedException
         try {
             latch.await();
         } catch (InterruptedException e) {
@@ -68,6 +91,7 @@ public class SimpleConsumerWithThread {
 
     public class ConsumerRunnable implements Runnable {
 
+        //we use CountDownLatch to deal with concurrency and to shut down our application correctly.
         private CountDownLatch latch;
         private KafkaConsumer<String, String> consumer;
         private Logger logger = LoggerFactory.getLogger(ConsumerRunnable.class.getName());
@@ -109,11 +133,14 @@ public class SimpleConsumerWithThread {
                 logger.info("Received shutdown signal!");
             } finally {
                 consumer.close();
+
                 // tell our main code we're done with the consumer
                 latch.countDown();
             }
         }
 
+        //We have a shut down which will throw an 'WakeupException' exception inside ConsumerRunnable
+        // thread (to break out of the loop).
         public void shutdown() {
             // the wakeup() method is a special method to interrupt consumer.poll()
             // it will throw the exception WakeUpException
