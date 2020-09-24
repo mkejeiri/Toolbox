@@ -13,7 +13,9 @@ public class SimpleProducerWithKeys {
 
         final Logger logger = LoggerFactory.getLogger(SimpleProducerWithKeys.class);
 
-        String bootstrapServers = "127.0.0.1:9092";
+        final String bootstrapServers = "127.0.0.1:9092";
+        //four keys
+        final Integer numberOfKeys = 4;
 
         // create Producer properties
         Properties properties = new Properties();
@@ -24,29 +26,22 @@ public class SimpleProducerWithKeys {
         // create the producer
         KafkaProducer<String, String> producer = new KafkaProducer<String, String>(properties);
 
+        //ten messages to be sent!
+        for (int i = 1; i <= 10; i++) {
+            //here we have two partition and 4 different keys
+            String topic = "third_topic";
+            String value = "hello message " + Integer.toString(i);
+            String key = "key_" + Integer.toString(i % numberOfKeys == 0 ? numberOfKeys : i % numberOfKeys);
 
-        for (int i=0; i<10; i++ ) {
             // create a producer record
-
-            String topic = "first_topic";
-            String value = "hello partition " + Integer.toString(i);
-            String key = "id_" + Integer.toString(i);
-
             ProducerRecord<String, String> record =
                     new ProducerRecord<String, String>(topic, key, value);
 
             logger.info("Key: " + key); // log the key
-            // id_0 is going to partition 1
-            // id_1 partition 0
-            // id_2 partition 2
-            // id_3 partition 0
-            // id_4 partition 2
-            // id_5 partition 2
-            // id_6 partition 0
-            // id_7 partition 2
-            // id_8 partition 1
-            // id_9 partition 2
-
+            // key_1 is going to  partition 1
+            // key_2 partition 0
+            // key_3 partition 1
+            // key_4 partition 0
 
             // send data - asynchronous
             producer.send(record, new Callback() {
@@ -63,13 +58,14 @@ public class SimpleProducerWithKeys {
                         logger.error("Error while producing", e);
                     }
                 }
-            }).get(); // block the .send() to make it synchronous - don't do this in production!
+            })
+              // block the .send() to make it synchronous - bad practice - don't do this in production!
+              //we need  to 'throws ExecutionException, InterruptedException'
+              .get();
         }
-
         // flush data
         producer.flush();
         // flush and close producer
         producer.close();
-
     }
 }
