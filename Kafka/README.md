@@ -232,7 +232,8 @@ version-2
 7- Change the `log.dirs=C:\kafka_2.13-2.6.0\data\logs` inside `C:\[kafka_x.xx-x.x.x]\config\server.properties` 
 
 8- Start the ZooKeeper service : `zookeeper-server-start.bat C:\[kafka_x.xx-x.x.x]\config\zookeeper.properties`
-8- Start the Kafka broker service : `kafka-server-start.bat C:\[kafka_x.xx-x.x.x]\config\server.properties`
+
+9- Start the Kafka broker service : `kafka-server-start.bat C:\[kafka_x.xx-x.x.x]\config\server.properties`
 
 > Soon, ZooKeeper will no longer be required by Apache Kafka.
 
