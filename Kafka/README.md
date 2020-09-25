@@ -1004,7 +1004,7 @@ my-first-app-group             third_topic                    2          92
 
 ## Kafka Java Producers
 ----
-Throughout this project, we use the following **maven** dependencies for **Kafka client** and **logging** ([see full pom file](/Kafka/simple-Java/pom.xml)).
+Throughout this project, we use the following **maven** dependencies for **Kafka client** and **logging**, **_see pom files_** : [project pom](/Kafka/simple-Java/pom.xml) & [kafka basics module pom](/Kafka/simple-Java/Kafka-Basics/pom.xml).
 
 [Learn more about producer config](https://kafka.apache.org/documentation/#producerconfigs)
 
@@ -1061,7 +1061,7 @@ producer.flush();
 // or alternatively: flush and close producer
 producer.close();
 ```
-see full [SimpleProducer.java](simple-Java/src/main/java/kafka/example/producers/SimpleProducer.java)
+see full [SimpleProducer.java](/Kafka/simple-Java/Kafka-Basics/src/main/java/example/producers/SimpleProducer.java)
 
 **Simple Java producer with callback**
 ----
@@ -1104,7 +1104,7 @@ or lambda syntax
   }
 });
 ```
-see full [SimpleProducerWithCallback.java](simple-Java/src/main/java/kafka/example/producers/SimpleProducerWithCallback.java)
+see full [SimpleProducerWithCallback.java](/Kafka/simple-Java/Kafka-Basics/src/main/java/example/producers/SimpleProducerWithCallback.java)
 
 **Simple Java producer with Keys**
 ----
@@ -1186,7 +1186,7 @@ public class SimpleProducerWithKeys {
 ```
 
 ## Kafka Java Consumers
-in this project, we use the same **maven** dependencies for **Kafka client** and **logging**  as previously mentioned in producers section([see full pom file](/Kafka/simple-Java/pom.xml) ).
+in this project, we use the same **maven** dependencies for **Kafka client** and **logging**  as previously mentioned in producers section(**_see pom files_** : [project pom](/Kafka/simple-Java/pom.xml) & [kafka basics module pom](/Kafka/simple-Java/Kafka-Basics/pom.xml) ).
 
 `ConsumerConfig.AUTO_OFFSET_RESET_CONFIG values` : 
 
@@ -1239,13 +1239,13 @@ consumer.subscribe(Collections.singleton(topic));
 ```
 > the **consumer** read all **messages sequentially** from `partition` 0 and then 1 , ..., it reads messages as they arrive.
 
-see full [SimpleConsumer.java](simple-Java/src/main/java/kafka/example/consumers/SimpleConsumer.java)
+see full [SimpleConsumer.java](/Kafka/simple-Java/Kafka-Basics/src/main/java/example/consumers/SimpleConsumer.java)
 
 
 **Simple Java Consumer Group**
 -----
 
-see full [SimpleConsumerGroup.java](simple-Java/src/main/java/kafka/example/consumers/SimpleConsumerGroup.java)
+see full [SimpleConsumerGroup.java](/Kafka/simple-Java/Kafka-Basics/src/main/java/example/consumers/SimpleConsumerGroup.java)
 
 **Note** : If we want our **consumer** to **read** from the **beginning again**, we either have to **reset** the `groupId` as we did before through the **CLI**, 
 e.g. `Kafka-consumer-groups --bootstrap-server localhost:9092 --group  mygroup-java-client --reset-offsets --to-offset 0 --execute --topic third_topic` **or** we **change** the `groupId` (i.e. use a different group name than `mygroup-java-client`)  in java client consumer. 
@@ -1268,10 +1268,10 @@ if we **run another instance** of `SimpleConsumerGroup` the **group** will get *
 **Simple Java Consumer Group - Thread**
 -----
 
-To avoid the infinite `while` `true` **loop** (e.g. previously used in [SimpleConsumerGroup.java](simple-Java/src/main/java/kafka/example/consumers/SimpleConsumerGroup.java) ) we will leverage the **threads** which is a better way of **shutting down** our app.
+To avoid the infinite `while` `true` **loop** (e.g. previously used in [SimpleConsumerGroup.java](/Kafka/simple-Java/Kafka-Basics/src/main/java/example/consumers/SimpleConsumerGroup.java) ) we will leverage the **threads** which is a better way of **shutting down** our app.
 we'll have our consumer in a thread, hence the use of `public class ConsumerRunnable implements Runnable...`.
 
-see full [SimpleConsumerWithThread.java](simple-Java/src/main/java/kafka/example/consumers/SimpleConsumerWithThread.java)
+see full [SimpleConsumerWithThread.java](/Kafka/simple-Java/Kafka-Basics/src/main/java/example/consumers/SimpleConsumerWithThread.java)
 
 note that `ConsumerRunnable` class has a `run` method to consume the messages, and `shutdown()` method to stop the thread.
 
@@ -1285,10 +1285,29 @@ note that `ConsumerRunnable` class has a `run` method to consume the messages, a
 This is two different kind of **APIs**, **assign** and **seek** are mostly used to **replay data** or **fetch** a **specific message** from **specific** `partition` in **specific** `topic` on a **specific** `offset`.
 
 
-see full [SimpleConsumerAssignSeek.java](simple-Java/src/main/java/kafka/example/consumers/SimpleConsumerAssignSeek.java)
+see full [SimpleConsumerAssignSeek.java](/Kafka/simple-Java/Kafka-Basics/src/main/java/example/consumers/SimpleConsumerAssignSeek.java)
 
 
 **Client bi-directional compatibility**
 -----
 
 **Kafka clients** and **Kafka brokers** have a **bi-directional compatibility** feature,  API calls are now **versioned** (*introduced for Kafka 0.10.2 in July 2017*), this  means that an **older client**, can **talk** to a **newer broker**, Alternatively, a **newer client** can **talk** to an **older broker**. So **Kafka version** and **Kafka client version** can be **different** and still **talk** to each others, we should **always** stick to the **latest client library** version. 
+
+# Twitter --> KAFKA --> Elastic search
+----
+
+**step 1** : We need to create a **Twitter [developer account](https://developer.twitter.com/en)** to get credentials for Twitter.
+
+**disclaimer** :
+> I intend to use this Twitter feed to get real-time data streams into an application that will put data into Kafka.
+This data will end up in ElasticSearch at the end  and this is just for POC support and concept. Purposes: no commercial obligation will result out of this, and I won't have any users besides just myself. twitter data will not be displayed, and we will only extract tweets on low volume terms. So this is it, you just describe in your own words what you're building. And then, will you make the information available to a government entity.
+and `submit your application`.
+
+> add application description: this application will read streams of tweets in real time and put them into Kafka.So we need to get keys and tokens to have a consumer API key and API secret key.we have to create an access token and access token secrets.
+
+
+**step two** :  head to [Hosebird Client (hbc) - Github twitter, java](https://github.com/twitter/hbc).
+It's a **java client** which consumes **twitter's streaming API**, we need also to copy from there the **Twitter dependency**.
+
+
+
