@@ -1346,14 +1346,89 @@ in Kafka >= 0.11, we can define an **idempotent producer** which won't introduce
 	- For **Kafka >= 0.11**: **retries** are set to `Integer.MAX_VALUE = 2^31-1=2174483647` 
 	- For **Kafka >= 0.11 & < 1.1** `max.in.flight.requests.per.connection=1`, **or** `max.in.flight.requests.per.connection=5` for **Kafka >= 1.1** which offers a **higher performance**.
 	- `acks=all` included as well.
-
-
-
-
 ![pic](images/idempotent-producer.jpg)	
 
+**Safe prooducer summary**
+
+**Kafka < 0.11**:
+- `acks=all`  (producer level) : ensures data is properly replicated before an `acks` is received
+- `min.insync.replicas=2` (broker/topic level): ensures two broker in ISR at least have the data after an `ack`  
+- `retries=MAX_INT` (producer level): Ensures transient errors are retries indefinitely.
+- `max.in.flight.requests.per.connection=1` (producer level) : Ensures only one request is tried at any time, preventing message re-ordering in case of retries.
+
+Kafka >= 0.11 :
+- `enable.idempotence=true` (producer level) + `min.insync.replicas=2` (broker/topic level) : 
+	- Implies  `acks=all`, `retries=MAX_INT`, `max.in.flight.requests.per.connection=5`(default)
+	- keeps ordering guarantees and improving performance!
+
+> Running a **safe producer** might impact **throughput** and **latency**, always test case by case. see [TwitterProducer.java](/Kafka/simple-Java/kafka-twitter-producer/src/main/java/twitter/producer/TwitterProducer.java).
 
 
+**Messages compression**
+---- 
+- **Producer** send often **text-based messages** : json/xml/text based, in such a case it's important to **apply** **compression**.
+- `compression.type` can be `none` (**default**),`gzip`,`lz4`,`snappy` (made by google) 
+- **compression** is more **effective** when the sent **batch** is **bigger** in **size**.
+![pic](images/compression.jpg)	
+
+- **Advantages of batch compression** :
+	- Much **smaller producer request** size (compression ratio up to 4x)
+	- faster to **transfer data** over the network (i.e. less latency)
+	- better **throughput**
+	- better **disk utilisation** in Kafka(stored messages on disk are smaller)
+	
+- **Disadvantages**
+	- Producers must commit some **CPU cycles** to **compression**
+	- Consumers must commit some **CPU cycles** to **decompression**
+
+> consider testing `snappy` or `lz4` for optimal **speed/compression ratio**.
+> consider tweaking `linger.ms` and `batch.size` to have a **bigger batches** and therefore more **compression** and **higher throughput** explain next.
+
+[Benchmarks](https://blog.cloudflare.com/squeezing-the-firehose/)
+
+
+**Linger.ms and batch.size**
+----
+- **Kafka** tries to send **records** as soon as possible by **default**:
+	- It will have up to **5 requests in flight** (i.e. 5 **individual messages** sent **simultaneously**)
+	- If more **messages** have to **be sent** while others are **in flight**, **Kafka** is smart enough to **start** **balancing** them while it **waits to send them all at once**.
+	- **producer Smart batching** allows **Kafka** to increase **thoughput** while maintaining very **low latency**(e.g. **producer** won't do 1000 requests it will batch them).
+	- **Batches** have higher **compression ratio** so better **efficiency** (i.e. **producer** send one **batch** instead of several request, so less **overhead**) 
+	- So how can we **control** the **balancing mechanism**?
+	
+- `linger.ms` : is number of `milliseconds` a **producer** is willing to wait before sending the **batch** out (`default` is 0),e.g. setting it to `linger.ms=5` we increase for instance the chances of **messages** to be sent in a **batch**.
+- A small **delay** of `linger.ms` allows us to increase **thoughput**, **compression** and **efficiency** of the **producers**. 
+
+- If `batch.size` is reached before `linger.ms` period elapsed, it will send antway!, `batch.size` is the Max number of bytes that will be included in a batch (default is 16KB).
+- Setting the **batch size** to **32KB/64KB** increases the **compression**, **throughput** and **efficiency** of **requests**. 
+- **Message** that is bigger that the **batch size** **won't** be **batched**.
+- **batch size** is allocated by **partition**, setting it to a **higher number** might lead to a **waste of memory**. Use Kafka Producer metrics to monitor the  **batch size** average. 
+
+> by introducing a small delay (`linger.ms`) in kafka we manage to get less requests and more throughput. 
+
+
+**Producer Default Partitions and Key Hashing - Theory**
+----
+- **keys** are **hashed** uing `murmur2` algorithms.
+- It's most likely preferred never **override** the default partitioner, but it is possible to do so (`partitioner.class`) and provide our **own partitioner class** .
+- The target formula: `targetPartition=Utils.abs(Utils.murmur2(record.key()))%numberOfPartions`, i.e. The same key will go to the same partition, but if we added/remove a **partition to a topic**, it will completely alter the formula and the **keys-partition** association with it.
+
+**max.block.ms and buffer.memory**
+	
+**Exception** occurs when the **producer** produces a way **faster** than the **broker can take**, the records are buffered into memory:
+- **broker** can not **ingest data** **fast enough** and get **overloaded**. 
+- Or, we haven't **sized** the **broker** correctly, 
+- Or, there's a **peak of usage** in the application.
+
+- **buffer.memory** =33554432 (32MB) is the size of the `.send` buffer, which will fill over time and fill back down when the **throughput** to the **broker increase**.
+- if the **buffer is full** (32MB), then the `.send` will **start to block**
+
+- `max.block.ms=60000` (60 seconds) is the time the `.send` will block until **throwing an exception**. **Exceptions** are thrown when : 
+	- The **producer** has **filled** up its **buffer**
+	- The **broker** is not **accepting any new data**
+	- **60 seconds** has **elapsed**.
+	
+- An **exception** usually means the **broker is down** or **overloaded** as it cannot respond to requests.
 
 
 # Twitter --> KAFKA --> Elastic search
