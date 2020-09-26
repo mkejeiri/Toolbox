@@ -143,7 +143,7 @@
 - **At most once**
 	- **offsets** are committed as soon as the message is received.
 	- If the processing goes wrong, the message will be **lost** (it won't be read again)
-- **At least once** :
+- **At least once** (default) :
 	- `offsets` are **committed** after the **message** is **processed**.
 	- If the message **processing** goes wrong, the `message` will be **read again**.
 	- This can result in **duplicate messages processing** if the processing is not `idempotent`.
@@ -153,7 +153,7 @@
 	
 	> `idempotent` : means processing the messages again won't have any impact on the systems.
 	
-	
+> **At least once** : i.e. at restart we will read the message again in case of abnormal shutdown, so we will read the message for sure at least once (we don't know if we read the message before the program stops).	
 **Kafka Broker Discovery**
 ----	
 - Every **Kafka broker** is also called a `bootstrap server`.
@@ -1431,6 +1431,131 @@ Kafka >= 0.11 :
 - An **exception** usually means the **broker is down** or **overloaded** as it cannot respond to requests.
 
 
+**Consumer Poll Behaviour**
+----
+**Kafka Consumers** have a `poll` model, while many other messaging bus in entreprise have a **push** model. 
+This allows **consumers** to control where in the **log** they want to **consume**, **how fast** and give them the **ablity** to **replay** the **events**.
+![pic](images/consumer-poll-behaviour.jpg)	
+
+To control the Consumer Poll Behaviour we could rely on the following :
+- **Fetch.min.bytes** (by default is `1` ):
+	- **control** how much **data** do we want to **pull** at **least** on each **request**. 
+	- helps improving **throughput** and decreasing the **request number** ( e.g. I don't want Kafka to give me anything unless I got a 100 kilobytes).
+	- at the cost of the **Latency**
+
+- **Max.poll.records** (by default is `500`)
+	- Controls how many **records** to **receive** per **poll request**.
+	- Increase if your **messages** are **very small** and have a **log** of **available RAM**.
+	- Good to **monitor** how many **records** are **polled per request**.
+	
+- **max.partitions.fetch.bytes** (default 1MB):
+	- maximum date returned by the broker per partition
+	- if you read from 100 partitions, you'll need a lot of memory (RAM)
+- **Fetch.max.bytes** (default 50MB):
+	- Maximum data returned for each **fetch request** (covers **multiple partitions**)
+	- The **consumer** performs **multiple fetches** in **parallel**
+	
+> Change these setting only if the consumer maxes out on throughput already!
+
+
+**Consumer Offsets strategies**
+----
+
+There **two** most common **patterns for committing offsets** in a **consumer** app:
+-  `enable.auto.commit=true` & **synchronous processing** of **batches** (easy : used by default):
+	- with `auto-commit`, **offsets** will be commited **automatically** at **regular interval** (`auto.commit.interval.ms=5000` by default) every time a call to `.poll()` is made.
+	- if we don't use the **synchronous processing**, we will be in `at-most-once` **behaviour** because **offsets** will be **committed** **before data** is **processed**. 
+	
+-  `enable.auto.commit=false` & **manual commit** of **offsets** (medium): 
+	- `enable.auto.commit=false` with synchronous processing of batches.
+	-  we control when **we commit offsets** and what's the **condition for committing** them. (e.g. *accumulation records into a buffer and then flushing he buffer to a database + committinfg offsets*)
+	
+**Consumer Offsets Reset Behaviour**
+----
+	
+a **consumer** is expected ot read from a **log continuously**, but if an **app** has a **bug**, the **consumer** can be down 
+
+![pic](images/Consumer-offsets-reset-behaviour.jpg)	 
+
+If kafka has a **retention of 7 days**, and the **consumer is down** for more than **7 days**, the **offsets** are `invalid`. 
+
+The **behaviour for the consumer** is to then use:
+
+- `auto.offset.reset=latest`: will **read** from the **end of the log**
+- `auto.offset.reset=earliest`: will **read** from the **start of the log**
+- `auto.offset.reset=none`: will throw an **exception** (prompt us for manual intervention)
+
+Additionally, **consumer offsets can be lost**:
+
+- If a **consumer** hasn't **read** new data in **ONE day** (Kafka <2.0)
+- If a **consumer** hasn't **read** new **data in 7 days** (Kafka >=2.0)
+
+This can be **controlled** by the **broker setting** `offset.retention.minutes`
+
+
+**Replaying data for consumers**
+----
+
+To replay data for a **consumer group**:
+
+- Take all the **consumers** from a **specific group**
+- Use `Kafka-consumer-groups` **command** to set **offset** to what we want
+- **Restart consumers**
+
+**In Summary**:
+
+- Set **proper data retention period** & **offset retention period**
+- Ensure the **auto offset reset** behaviour is the one we expect/want
+- Use **replay** capability in case of **unexpected behaviour**.
+
+
+
+**Consumer Internal Threads**
+----
+how does a **consumer group work**? How does **everything get coordinated**?
+Each **consumer** is going to **poll Kafka** (i.e `poll threads process`), and each **consumer** is also going to talk to a **consumer coordinator** and send **heartbeats**.
+
+
+These two **separate threads** allow to check if the **consumer are alive or dead**:
+
+- The **poll of the brokers** :
+- the **heartbeats** : allows the brokers to check whether or not the consumers are alive or not.
+
+![pic](images/consumer-internal-threads.jpg)	 
+
+- When a consumer **stops beating**, the **consumer's coordinator** (which is an **active broker**) step in and do a **rebalance**. 
+- to make sure that these two **threads are correctly** functioning, it is encouraged to **process data fast** and **poll often**, otherwise we get a lot of **rebalances**.
+
+
+- **Consumers in a group** talk to a **consumer groups coordinator** 
+- To detect** consumers that are down**, there is a `heartbeat` mechanism and a `poll` mechanism
+- To avoid **issues**, **consumers are encouraged** to process **data fast** and **poll often**.   
+
+
+
+`session.timeout.ms` (default 10 seconds) :
+- **Heartbeats** are **sent periodically** to the **broker**
+- If **no heartbeat** is sent during that period, the **consumer** is considered **dead**
+- Set even **lower** to **faster consumer rebalances**
+
+`Heartbeats.internal.ms` (default 3 seconds) :
+- how often to send a **heartbeats**
+- Usually set to **1/3rd** if `session.timeout.ms`
+
+> this mechanism is used to **detect** a **consumer application being down**.
+
+
+**Consumer Poll Thread**
+----
+
+`max.poll.internal.ms` (default 5 minutes) :
+- **Maximum amount** of **time** between two `.poll()` **calls** before declaring the **consumer dead**
+- This particulary **relevant for Big data** frameworks like `Spark` in case the **processing** takes time.
+
+> This **mechanism** is used to **detect** a **data processing issue** with **consumer**.
+
+
+
 # Twitter --> KAFKA --> Elastic search
 ----
 
@@ -1449,3 +1574,9 @@ It's a **java client** which consumes **twitter's streaming API**, we need also 
 
 the bottom line is, we need to **create** **[twitter client](https://github.com/twitter/hbc)** and **Kafka producer**.
 see [TwitterProducer.java](/Kafka/simple-Java/kafka-twitter-producer/src/main/java/twitter/producer/TwitterProducer.java).
+
+
+For elastic search we use [bonsai.io](bonsai.io), we need to create a **cluster** and an **index** through the [bonsai.io](bonsai.io) console.
+
+for Java comsumer see [ElasticSearchConsumer.java](/Kafka/simple-Java/kafka-consumer-elasticsearch/src/main/java/elasticsearch/ElasticSearchConsumer.java).
+

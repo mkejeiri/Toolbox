@@ -79,6 +79,8 @@ public class ElasticSearchConsumer {
         properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
+        //2nd Consumer Offsets strategy: see readme file.
         properties.setProperty(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "false"); // disable auto commit of offsets
         properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "100"); // disable auto commit of offsets
 
@@ -147,6 +149,10 @@ public class ElasticSearchConsumer {
                     IndexRequest indexRequest = new IndexRequest("tweets")
                             .source(record.value(), XContentType.JSON)
                             .id(id); // this is to make our consumer idempotent
+
+                    //avoid inserting in elastic search each record at the time, use the bulk insert instead
+                    /*IndexResponse indexResponse = client.index(indexRequest, RequestOptions.DEFAULT);
+                    logger.info(indexResponse.getId());*/
 
                     bulkRequest.add(indexRequest); // we add to our bulk request (takes no time)
                 } catch (NullPointerException e){
