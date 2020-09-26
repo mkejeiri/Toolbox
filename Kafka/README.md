@@ -1293,6 +1293,69 @@ see full [SimpleConsumerAssignSeek.java](/Kafka/simple-Java/Kafka-Basics/src/mai
 
 **Kafka clients** and **Kafka brokers** have a **bi-directional compatibility** feature,  API calls are now **versioned** (*introduced for Kafka 0.10.2 in July 2017*), this  means that an **older client**, can **talk** to a **newer broker**, Alternatively, a **newer client** can **talk** to an **older broker**. So **Kafka version** and **Kafka client version** can be **different** and still **talk** to each others, we should **always** stick to the **latest client library** version. 
 
+
+# Producers
+
+**Producers** `acks`
+----
+ 
+- `acks=0` (**no acks**) :
+	- **No response** is **requested**.
+	- We get good **performance** beacuse the broker never replies to the producers
+	- If the **broker** goes **offline** or an **exception** occurs, we won't **know** and will **lose** the **data**
+	![pic](images/acks-0.jpg)
+	
+	- **Useful** for data when we could **tolerate** to **lose data** sometime:  e.g. logs, metrics, analystics  ...
+
+
+- `acks=1` (**leader acks**) : this is the **Default behaviour**.
+	- **Leader response** is **requested**, but **replication** is **not guaranteed** (happens in the background)
+	- If an `ack` is **not received**, the **producer may retry**.
+	![pic](images/acks-1.jpg)	
+	- if the **leader broker** goes **offline** and **replicas** haven't replicated the **data yet**, the **data get lost**.  	
+
+- `acks=all` (**replicas acks**) :
+	- **leader and replicas** `ack` is **requested**.
+	- This will add **latency** (i.e. broker leader needs to wait for `ack` from all brokers replicas) and **safety** (i.e. more guarantees is requested) to the process.
+	- **No data loss** if enough **replicas** are in play.
+	![pic](images/acks-all.jpg)		
+	- **Necessary setting** to prevent data loss. 
+	- `acks=all` must be used in conjuction with `min.insync.replicas`, which can be set at the `broker` or `topic` level(e.g. override).
+	- most '*common setting*' is `min.insync.replicas = 2`, i.e. at least 2 brokers that are **ISR** (including leader) must **respond** that they **received** the **data**, otherwise an **error** message occurs.
+	- if we use `replication.factor=3`, `min.insync.replicas=2` and `acks=all`, we can only tolerate **ONE broker** going **down**, otherwise the **producer** will **receive** an **exception** on send.
+	![pic](images/acks-all-error.jpg)		
+	
+> Note that the `replication.factor` is the number of **replicas** per partition, while `min.insync.replicas` is how many **responses** or `acks` are **required** per **In-Sync replica** or **per broker** to consider that the data is secured against any potential losses. e.g. `min.insync.replicas=2`: **TWO brokers** `ack` is considered to be reliable enough and shield us from any potential data losses even though we could have `replication.factor > 2` (i.e. number of **ISR**). 
+
+**Producers retries**
+---- 
+- In case of **transient failure**, **developers** are expected to **handle exceptions** (e.g. `NotEnoughReplicasException`), otherwise the **data** will be **lost** 
+- There is a `retries` setting: **default** is `0`, but we can **increase** to a **high number**, e.g. `Integer.MAX_VALUE` which gives an **indefinite retry** until it **suceeds**.
+- In case of **retries**, by default there is a **chance** that **messages** will be **sent** out of **order**(*if a batch has failed to be sent, messages get requeued!*)
+- If we **rely** on **key-based ordering**, that can be an **issue**.
+- To control this **behaviour**, we can **sent** the **setting** while **controls** how many **producers request** can be made in **parallel** : `max.in.flight.requests.per.connection`
+	- **default**: `5`
+	- We set it to **ONE**, if we need to **ensure ordering** (may impact `throughput`)
+- In **Kafka >=1.0.0**, there's a **better solution**!.
+
+**Producers idempotence**
+---- 
+in Kafka >= 0.11, we can define an **idempotent producer** which won't introduce a **duplicate** when **network errors** occurs.
+- **Idempotent producers** guarantee a stable and safe pipeline and doesn't add a big **overhead**.
+- We need to set `producerProps.put("enable.idempotence",true)` and we get by **default** :  
+	- For **Kafka >= 0.11**: **retries** are set to `Integer.MAX_VALUE = 2^31-1=2174483647` 
+	- For **Kafka >= 0.11 & < 1.1** `max.in.flight.requests.per.connection=1`, **or** `max.in.flight.requests.per.connection=5` for **Kafka >= 1.1** which offers a **higher performance**.
+	- `acks=all` included as well.
+
+
+
+
+![pic](images/idempotent-producer.jpg)	
+
+
+
+
+
 # Twitter --> KAFKA --> Elastic search
 ----
 
@@ -1311,4 +1374,3 @@ It's a **java client** which consumes **twitter's streaming API**, we need also 
 
 the bottom line is, we need to **create** **[twitter client](https://github.com/twitter/hbc)** and **Kafka producer**.
 see [TwitterProducer.java](/Kafka/simple-Java/kafka-twitter-producer/src/main/java/twitter/producer/TwitterProducer.java).
-
