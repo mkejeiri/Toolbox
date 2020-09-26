@@ -1299,8 +1299,7 @@ see full [SimpleConsumerAssignSeek.java](/Kafka/simple-Java/Kafka-Basics/src/mai
 **step 1** : We need to create a **Twitter [developer account](https://developer.twitter.com/en)** to get credentials for Twitter.
 
 **disclaimer** :
-> I intend to use this Twitter feed to get real-time data streams into an application that will put data into Kafka.
-This data will end up in ElasticSearch at the end  and this is just for POC support and concept. Purposes: no commercial obligation will result out of this, and I won't have any users besides just myself. twitter data will not be displayed, and we will only extract tweets on low volume terms. So this is it, you just describe in your own words what you're building. And then, will you make the information available to a government entity.
+> I intend to use Twitter feed to get real-time data streams into an application that will put data into Kafka (local machine), I solemnly use this for learning purposes. The data will end up in ElasticSearch at the end and this is just for POC support and concept. Purposes: no commercial obligation will result out of this, and I won't have any users besides just myself. twitter data will not be displayed, and we will only extract tweets on low volume terms. I will make the information available to a government entity if deem necessary.
 and `submit your application`.
 
 > add application description: this application will read streams of tweets in real time and put them into Kafka.So we need to get keys and tokens to have a consumer API key and API secret key.we have to create an access token and access token secrets.
@@ -1310,4 +1309,6 @@ and `submit your application`.
 It's a **java client** which consumes **twitter's streaming API**, we need also to copy from there the **Twitter dependency**.
 
 
+the bottom line is, we need to **create** **[twitter client](https://github.com/twitter/hbc)** and **Kafka producer**.
+see [TwitterProducer.java](/Kafka/simple-Java/kafka-twitter-producer/src/main/java/twitter/producer/TwitterProducer.java).
 
