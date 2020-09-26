@@ -1580,3 +1580,100 @@ For elastic search we use [bonsai.io](bonsai.io), we need to create a **cluster*
 
 for Java comsumer see [ElasticSearchConsumer.java](/Kafka/simple-Java/kafka-consumer-elasticsearch/src/main/java/elasticsearch/ElasticSearchConsumer.java).
 
+
+# Kafka Connect and Stream
+----
+[**Kafka Connect**](https://jcustenborder.github.io/kafka-connect-documentation/installation.html): simplify and improve getting **data** **in** and **out** of **kafka**, [see supported Connectors](https://docs.confluent.io/current/connect/managing/connectors.html) :
+
+- **Source connectors** allow us **get data** from Common Data sources (i.e. `Databases`, `twitters`, `elastic search db`, ...). 
+- **Sink connectors** allows us to **publish data** into Common Data sources (i.e. Databases, twitters, elastic search db, ...). 
+- Allows **re-usable code**, it's **config based**, no **programming skill** is required (i.e. `jar libraries` and `properties` file config)
+- It Could be part of **ETL pipeline**
+- **Scaling** (made easy) from small pipelines to company-wide pipeline
+
+**Kafka Stream** : simplify **transforming data** **within Kafka** without relying on **external library**. [see full example](/Kafka/simple-Java/kafka-streams-tweets-filter/src/main/java/kafka/stream/StreamsFilterTweets.java).
+
+
+**Four Kafka user cases** : 
+![pic](images/kafka-connect-stream.jpg)	 
+
+
+- **Source** => **Kafka** : instead of *Producer API*, use **Kafka Connect Store**
+- **Kafka** => **Kafka** : instead of *Consumer, Producer API*, use **Kafka Streams**
+- **Kafka** => **Sink** : instead of *Consumer API*, use **Kafka Connect Sink**
+- **Kafka** => **App** : **Consumer API**		
+
+> search for a [kafka connector](https://www.confluent.io/hub/), [download](https://github.com/jcustenborder/kafka-connect-twitter/releases)
+
+
+**Example on how to use Connector for twitter**:
+- [download tar file](https://github.com/jcustenborder/kafka-connect-twitter/releases) and extract the jar's into `c:\twitter-connector` 
+- copy the folder `c:\[kafka_x.xx-x.x.x]\config\connect-standalone.properties` into `c:\twitter-connector` and change the line `plugin.path=plugins` and set `twitter.properties` file (e.g. credentials, topics, ...).
+- run the command `connect-standalone.bat connect-standalone.properties`
+
+
+**Schema registry**
+----
+**Kafka** takes **bytes** as **input** and **publish** them, i.e. **no data verification** is involved. If a **producer** send **bad data**, **fields** get **renamed** or **data format** changes the **consumers** will **break!**. 
+
+![pic](images/pipeline-with-schema-registry.jpg)	
+
+Hence, the need for data to be self describable and evolve without breaking **downstream consumers** and this could be **achieved** through **schema registry**:
+
+- **Schema registry** is a separate **component**. 
+- **Producers** and **consumers** talk to **schema registry** to validate the data structure.
+- **Schema registry**: **checks**, **validate** and **reject bad data**.
+- A **common data format** must be **agreed** upon, this should  **support schemas**, **evolution** and must be **lightweight**.
+- **Kafka** provides out of the box **`Confluent schema registry`** and `appache Avro` as the **data format**.
+
+
+
+**Confluent schema registry**
+---
+- **Store** and **retrieve** **schemas** for **Producers/Consumers**
+- **Enforce** **Backward/Forward/full compatibility** on **topics**
+- **Decrease** the **size of the payload** of **data** sent to **kafka**.
+![pic](images/confluent-schema-registry.jpg)
+
+**However a few gotchas!**
+	
+- we have to make it **highly available**.
+- we need to **change** partially  the **code** for **consumers** and **producers**.
+- `Apache avro` is **reliable** but there is a **learning curve**.
+- **Confluent schema registry** is open source and free.
+- It takes **time** to set up.
+ 
+ 
+**Real World business Cases (Big Data  Fast Data)**
+----
+
+**Video analystics Architecture**
+![pic](images/video-analystics-architecture.jpg)
+
+**CQRS Social media Architecture**
+![pic](images/CQRS-socialmedia-architecture.jpg)
+
+**Bank account realtime monitoring**
+![pic](images/bank-account-realtime-monitoring.jpg)
+
+**IOT - GetTaxi business case**
+![pic](images/IOT-getTaxi.jpg)
+
+
+**Big data ingestion business case**
+![pic](images/big-data-ingestion.jpg)
+
+**Logging and Metrics Aggregation**
+![pic](images/logging-metrics-aggregation.jpg)
+
+
+
+
+
+
+
+
+
+
+
+
