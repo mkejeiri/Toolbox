@@ -1669,6 +1669,22 @@ Hence, the need for data to be self describable and evolve without breaking **do
 
 
 
+# Docker container & running Kafka on AWS cloud EC2
+
+To run docker local stack on single or multi-broker kafka cluster, please check out [github](https://github.com/simplesteph/kafka-stack-docker-compose)
+
+
+
+**To run kafka as a cluster in EC2**
+- Use a linux AMI with a free tier
+- Open ssh & Kafka ports with the Security group.
+- Install Java 8 
+- Download kafka on EC2 instance
+- `export KAFKA_HEAP_OPTS="-Xmx256M -Xmx128M"` because we will be  on a small machine, we need to export Kafka heap options.
+- go and edit `conf/server.properties`, add AWS_PUBLIC_IP to `advertised.listeners=PLAINTEXT://[AWS_PUBLIC_IP]:9092` 
+- start zooKeeper in daemon mode `bin/zooKeeper-server-start.sh -daemon config/zookeeper.properties`
+- start kafka in daemon mode `bin/kafka-server-start.sh -daemon config/server.properties`
+- create a producer from the local machine `kafka-console-producer --broker-list [AWS_PUBLIC_IP]:9092 --topic mytopic` or `kafka-console-producer --boostrap-server [AWS_PUBLIC_IP]:9092 --topic mytopic` in the cluster and start typing messages.
 
 
 
