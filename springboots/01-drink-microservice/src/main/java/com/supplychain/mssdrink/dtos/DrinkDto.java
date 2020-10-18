@@ -1,5 +1,4 @@
-package com.supplychain.drinkmicroservice.model;
-
+package com.supplychain.mssdrink.dtos;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

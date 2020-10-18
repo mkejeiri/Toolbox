@@ -1,7 +1,7 @@
-package com.supplychain.drinkmicroservice.controllers;
+package com.supplychain.mssdrink.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.supplychain.drinkmicroservice.model.DrinkDto;
+import com.supplychain.mssdrink.dtos.DrinkDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;

@@ -1,4 +1,4 @@
-package com.supplychain.drinkmicroservice.model;
+package com.supplychain.mssdrink.dtos;
 
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;

@@ -1,10 +1,10 @@
-package com.supplychain.drinkmicroservice;
+package com.supplychain.drinkmicroserviceclient;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class DrinkMicroServiceApplicationTests {
+class DrinkMicroserviceClientApplicationTests {
 
     @Test
     void contextLoads() {
