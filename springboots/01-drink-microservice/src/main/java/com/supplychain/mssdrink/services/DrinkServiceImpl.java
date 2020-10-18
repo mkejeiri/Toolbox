@@ -15,12 +15,12 @@ public class DrinkServiceImpl  implements  DrinkService{
         //TODO: impl persistence
         return DrinkDto.builder().id(drinkId)
                 .createdAt(OffsetDateTime.now())
-                .drinkName("coca")
-                .drinkStyle(DrinkStyleEnum.ALE)
+                .drinkName("ALE")
+                .drinkStyle("ALE")
                 .modifiedAt(OffsetDateTime.now())
                 .quantityOnHand(1)
                 .price(new BigDecimal("12.04"))
-                .version(1)
+                .version(1L)
                 .upc(123456789L)
                 .build();
     }
