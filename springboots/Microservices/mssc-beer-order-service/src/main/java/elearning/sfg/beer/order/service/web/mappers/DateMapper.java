@@ -1,4 +1,4 @@
-package elearning.sfg.beer.inventory.service.web.mappers;
+package elearning.sfg.beer.order.service.web.mappers;
 
 import org.springframework.stereotype.Component;
 
