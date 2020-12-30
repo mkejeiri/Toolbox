@@ -34,7 +34,6 @@ public class HelloMessageListener {
                        Message message){
 
         System.out.println("I Got a Message!!!!!");
-
         System.out.println(helloWorldMessage);
         // Inside listen everything behave as single transaction, if it fails it will retry (by default 10 times).
         //we can see the retrial in the headers object.

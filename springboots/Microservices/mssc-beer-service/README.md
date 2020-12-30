@@ -14,11 +14,11 @@ BeerMapperImpl by matching the property names, along with @DecoratedWith will cr
 
 
 ```Java
-import elearning.springframework.msscbeerservice.domain.Beer;
-import elearning.springframework.msscbeerservice.domain.Beer.BeerBuilder;
-import elearning.springframework.msscbeerservice.web.model.BeerDto;
-import elearning.springframework.msscbeerservice.web.model.BeerDto.BeerDtoBuilder;
-import elearning.springframework.msscbeerservice.web.model.BeerStyleEnum;
+import Beer;
+import Beer.BeerBuilder;
+import BeerDto;
+import BeerDto.BeerDtoBuilder;
+import BeerStyleEnum;
 import javax.annotation.processing.Generated;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
