@@ -1,20 +1,24 @@
 package elearning.sfg.beer.msscbeerservice.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.boot.autoconfigure.jms.artemis.ArtemisProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
 
+@EnableConfigurationProperties(ArtemisProperties.class)
 @Configuration
 public class JmsConfig {
 
     //QUEUE Name
     public static final String BREWING_REQUEST_QUEUE = "BREWING_REQUEST_QUEUE";
     public static final String NEW_INVENTORY_QUEUE = "NEW_INVENTORY_QUEUE";
+
     @Bean
-    public MessageConverter messageConverter(
+    public MessageConverter  jacksonJmsMessageConverter(
             ObjectMapper objectMapper //Spring managed object mapper injection (used by web endpoint).
             //OffSetTime mapping not working properly => reconfigure Jackson JMS message converter
             //to use the Spring Boot managed Jackson object mapper.

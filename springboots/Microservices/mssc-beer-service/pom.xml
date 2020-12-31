@@ -86,13 +86,13 @@
             <artifactId>ehcache</artifactId>
         </dependency>
         <dependency>
-            <!--get us the jms client-->
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-artemis</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.messaginghub</groupId>
-            <artifactId>pooled-jms</artifactId>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-jms-pool</artifactId>
+            <version>5.16.0</version>
         </dependency>
         <dependency>
             <groupId>javax.validation</groupId>
