@@ -22,7 +22,7 @@ public class ScheduledService {
     private final StateMachineFactory<PaymentState, PaymentEvent> factory;
     private final PaymentService paymentService;
 
-    @Scheduled(fixedRate = 100) //every 5 seconds
+    @Scheduled(fixedRate = 5000) //every 5 seconds
     @Transactional
     public void triggerMachineStateChanges() {
         Payment payment = Payment.builder()
