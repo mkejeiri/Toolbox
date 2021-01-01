@@ -31,5 +31,11 @@ public class BeerInventory extends BaseEntity {
     private UUID beerId;
 
     private String upc;
+    /*
+    * On Hand quantity is always calculated based on actual transactions,
+    * operations and/or inventory cards. On Hand quantity is the quantity you expect to see in your warehouse.
+    * This includes products from sale orders which have yet to be fulfilled.
+    * This does not include products from purchase orders that are yet to be received.
+     * */
     private Integer quantityOnHand = 0;
 }

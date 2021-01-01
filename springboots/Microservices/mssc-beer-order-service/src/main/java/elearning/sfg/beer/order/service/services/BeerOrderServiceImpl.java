@@ -6,7 +6,7 @@ import elearning.sfg.beer.order.service.repositories.CustomerRepository;
 import elearning.sfg.beer.order.service.web.mappers.BeerOrderMapper;
 import elearning.sfg.beer.order.service.web.model.BeerOrderDto;
 import elearning.sfg.beer.order.service.domain.BeerOrder;
-import elearning.sfg.beer.order.service.domain.OrderStatusEnum;
+import elearning.sfg.beer.order.service.domain.BeerOrderStatusEnum;
 import elearning.sfg.beer.order.service.web.model.BeerOrderPagedList;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -67,7 +67,7 @@ public class BeerOrderServiceImpl implements BeerOrderService {
             BeerOrder beerOrder = beerOrderMapper.dtoToBeerOrder(beerOrderDto);
             beerOrder.setId(null); //should not be set by outside client
             beerOrder.setCustomer(customerOptional.get());
-            beerOrder.setOrderStatus(OrderStatusEnum.NEW);
+            beerOrder.setOrderStatus(BeerOrderStatusEnum.NEW);
 
             beerOrder.getBeerOrderLines().forEach(line -> line.setBeerOrder(beerOrder));
 
@@ -92,7 +92,7 @@ public class BeerOrderServiceImpl implements BeerOrderService {
     @Override
     public void pickupOrder(UUID customerId, UUID orderId) {
         BeerOrder beerOrder = getOrder(customerId, orderId);
-        beerOrder.setOrderStatus(OrderStatusEnum.PICKED_UP);
+        beerOrder.setOrderStatus(BeerOrderStatusEnum.PICKED_UP);
 
         beerOrderRepository.save(beerOrder);
     }

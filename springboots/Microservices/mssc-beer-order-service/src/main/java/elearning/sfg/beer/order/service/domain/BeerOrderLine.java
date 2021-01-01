@@ -35,5 +35,11 @@ public class BeerOrderLine extends BaseEntity {
     private UUID beerId;
     private String upc;
     private Integer orderQuantity = 0;
+    /*
+    * Allocated quantity represents the quantity of the product reserved to be used in the pending sale
+    * and/or work orders. These orders are not yet completed yet but are authorised, and for successful completion,
+    * items are reserved to avoid double selling. Allocated quantity is used to determine Available quantity
+    * for Quoting, Ordering, and Picking.
+     * */
     private Integer quantityAllocated = 0;
 }

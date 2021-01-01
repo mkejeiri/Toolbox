@@ -1,0 +1,6 @@
+package elearning.sfg.beer.order.service.domain;
+
+public enum BeerOrderEventEnum {
+    VALIDATION_REQUESTED, VALIDATION_APPROVED, VALIDATION_FAILED,
+    ALLOCATION_APPROVED, ALLOCATION_NO_INVENTORY, ALLOCATION_FAILED, PICKED_UP
+}
