@@ -7,7 +7,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
 import java.util.UUID;
-@ConfigurationProperties(prefix = "sfg.brewery", ignoreUnknownFields = false)
+@ConfigurationProperties(prefix = "sfg.brewery", ignoreUnknownFields = true)
 @Service
 public class BeerServiceImpl implements BeerService {
     public final String BEER_PATH_V1 = "/api/v1/beer/";

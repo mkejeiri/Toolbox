@@ -37,7 +37,7 @@ public class TastingRoomService {
     }
 
     @Transactional
-    @Scheduled(fixedRate = 2000) //run every 2 seconds
+    @Scheduled(fixedRate = 5000) //run every 5 seconds
     public void placeTastingRoomOrder(){
 
         List<Customer> customerList = customerRepository.findAllByCustomerNameLike(BeerOrderBootStrap.TASTING_ROOM);
@@ -50,10 +50,11 @@ public class TastingRoomService {
     }
 
     private void doPlaceOrder(Customer customer) {
-        String beerToOrder = getRandomBeerUpc();
+        String randomBeerUpc = getRandomBeerUpc();
 
-        BeerOrderLineDto beerOrderLine = BeerOrderLineDto.builder()
-                .upc(beerToOrder)
+        BeerOrderLineDto beerOrderLine = BeerOrderLineDto
+                .builder()
+                .upc(randomBeerUpc)
                 .orderQuantity(new Random().nextInt(6)) //todo externalize value to property
                 .build();
 
