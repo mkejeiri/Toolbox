@@ -14,7 +14,7 @@ BeerMapperImpl by matching the property names, along with @DecoratedWith will cr
 @Component
 @Qualifier("delegate")
 public class BeerMapperImpl_ implements BeerMapper {...}*/
-@Mapper(uses = {DateMapper.class})
+@Mapper(componentModel = "spring", uses = {DateMapper.class})
 @DecoratedWith(BeerMapperDecorator.class)
 /* the @DecoratedWith will generate the code below through the preprocessor,
 note that the implementation is as @Primary:
@@ -25,6 +25,7 @@ note that the implementation is as @Primary:
 public class BeerMapperImpl extends BeerMapperDecorator implements BeerMapper {
 }
 */
+
 public interface BeerMapper {
 
     BeerDto beerToBeerDto(Beer beer);

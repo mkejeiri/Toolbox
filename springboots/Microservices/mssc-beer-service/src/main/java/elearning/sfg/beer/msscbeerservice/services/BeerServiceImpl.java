@@ -1,12 +1,12 @@
 package elearning.sfg.beer.msscbeerservice.services;
 
+import elearning.sfg.beer.msscbeerservice.domain.Beer;
 import elearning.sfg.beer.msscbeerservice.repositories.BeerRepository;
 import elearning.sfg.beer.msscbeerservice.web.controller.NotFoundException;
 import elearning.sfg.beer.msscbeerservice.web.mappers.BeerMapper;
 import elearning.sfg.beer.msscbeerservice.web.model.BeerDto;
 import elearning.sfg.beer.msscbeerservice.web.model.BeerPagedList;
 import elearning.sfg.beer.msscbeerservice.web.model.BeerStyleEnum;
-import elearning.sfg.beer.msscbeerservice.domain.Beer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -106,9 +107,16 @@ public class BeerServiceImpl implements BeerService {
     @Cacheable(cacheNames = "beerUpcCache")
     @Override
     public BeerDto getByUpc(String upc) {
-        return beerMapper.beerToBeerDto(                beerRepository.findByUpc(upc)
+        /*return beerMapper.beerToBeerDto(beerRepository.findByUpc(upc).orElseThrow(NotFoundException::new)
                 //beerRepository.findByUpc(upc).orElseThrow(NotFoundException::new)
 
+        );*/
+
+        return beerMapper.beerToBeerDto(
+                Optional.ofNullable(beerRepository.findByUpc(upc))
+                        .map(Optional::of)
+                        .orElseThrow(NotFoundException::new)
+                        .get()
         );
     }
 }

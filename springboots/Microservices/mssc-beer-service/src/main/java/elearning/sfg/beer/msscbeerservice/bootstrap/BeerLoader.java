@@ -3,12 +3,11 @@ package elearning.sfg.beer.msscbeerservice.bootstrap;
 import elearning.sfg.beer.msscbeerservice.domain.Beer;
 import elearning.sfg.beer.msscbeerservice.repositories.BeerRepository;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-@Component
+//@Component
 public class BeerLoader implements CommandLineRunner {
 
     public static final String BEER_1_UPC = "0631234200036";
