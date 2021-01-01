@@ -9,6 +9,7 @@ import elearning.sfg.beer.msscbeerservice.web.model.BeerDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.annotation.JmsListener;
+import org.springframework.jms.core.JmsTemplate;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -23,7 +24,7 @@ import javax.transaction.Transactional;
 @Slf4j
 public class BrewBeerListener {
     private final BeerRepository beerRepository;
-   // private final JmsTemplate jmsTemplate;
+    private final JmsTemplate jmsTemplate;
 
     //@Transactional: Hibernate is doing a lazy initialization of the property beer.getQuantityToBrew()
     //and since we're running outside of transactional scope, there's no Hibernate session to work with.
@@ -47,6 +48,6 @@ public class BrewBeerListener {
 
         log.debug("Brewed beer " + beer.getMinOnHand() + " : QOH: " + beerDto.getQuantityOnHand());
 
-       // jmsTemplate.convertAndSend(JmsConfig.NEW_INVENTORY_QUEUE, newInventoryEvent);
+        jmsTemplate.convertAndSend(JmsConfig.NEW_INVENTORY_QUEUE, newInventoryEvent);
     }
 }

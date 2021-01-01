@@ -13,7 +13,7 @@ public abstract class BeerMapperDecorator implements BeerMapper {
 
     @Autowired
     //@Qualifier("delegate")
-    private BeerMapper beerMapper;
+    private BeerMapper delegate;
 
 
    /* @Autowired
@@ -28,18 +28,18 @@ public abstract class BeerMapperDecorator implements BeerMapper {
 
     @Override
     public BeerDto beerToBeerDto(Beer beer) {
-        BeerDto dto = beerMapper.beerToBeerDto(beer);
+        BeerDto dto = delegate.beerToBeerDto(beer);
         return dto;
     }
     @Override
     public BeerDto beerToBeerDtoWithInventory(Beer beer) {
-        BeerDto dto = beerMapper.beerToBeerDto(beer);
+        BeerDto dto = delegate.beerToBeerDto(beer);
         dto.setQuantityOnHand(beerInventoryService.getOnhandInventory(beer.getId()));
         return dto;
     }
 
     @Override
     public Beer beerDtoToBeer(BeerDto beerDto) {
-        return beerMapper.beerDtoToBeer(beerDto);
+        return delegate.beerDtoToBeer(beerDto);
     }
 }
