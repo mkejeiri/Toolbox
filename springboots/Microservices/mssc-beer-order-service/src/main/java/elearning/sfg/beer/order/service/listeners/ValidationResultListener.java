@@ -18,7 +18,9 @@ public class ValidationResultListener {
     private final JmsTemplate jmsTemplate;
     private final BeerOrderManager beerOrderManager;
 
-    @JmsListener(destination = JmsConfig.ALLOCATE_ORDER_RESPONSE_QUEUE)
+    //TODO: check the if it is the correct QUEUE
+    //@JmsListener(destination = JmsConfig.ALLOCATE_ORDER_RESPONSE_QUEUE)
+    @JmsListener(destination = JmsConfig.VALIDATE_ORDER_RESPONSE_QUEUE)
     public void listen(ValidateOrderResult validateOrderResult) {
         final UUID beerOrderId = validateOrderResult.getOrderId();
 

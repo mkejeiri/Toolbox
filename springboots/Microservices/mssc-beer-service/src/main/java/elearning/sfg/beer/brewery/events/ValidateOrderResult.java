@@ -14,6 +14,6 @@ import java.util.UUID;
 @Builder
 public class ValidateOrderResult {
     private UUID orderId;
-    private boolean isValid;
+    private Boolean isValid;
 
 }

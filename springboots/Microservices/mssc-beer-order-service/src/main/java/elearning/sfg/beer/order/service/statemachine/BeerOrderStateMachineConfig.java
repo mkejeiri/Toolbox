@@ -54,7 +54,7 @@ public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<B
     @Override
     public void configure(StateMachineTransitionConfigurer<BeerOrderStatusEnum, BeerOrderEventEnum> transitions) throws Exception {
         //VALIDATION_REQUESTED, VALIDATION_APPROVED, VALIDATION_FAILED,
-        //    ALLOCATION_APPROVED, ALLOCATION_NO_INVENTORY, ALLOCATION_FAILED, PICKED_UP
+        //ALLOCATION_APPROVED, ALLOCATION_NO_INVENTORY, ALLOCATION_FAILED, PICKED_UP
         transitions.withExternal()
                 .source(BeerOrderStatusEnum.NEW).target(BeerOrderStatusEnum.VALIDATION_PENDING).event(BeerOrderEventEnum.VALIDATION_REQUESTED)
                 .action(validateRequestAction)
@@ -80,8 +80,8 @@ public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<B
                 .source(BeerOrderStatusEnum.ALLOCATION_PENDING).target(BeerOrderStatusEnum.ALLOCATION_EXCEPTION).event(BeerOrderEventEnum.ALLOCATION_FAILED)
                 //.action(authDeclineAction)
 
-                .and().withExternal() //TODO: Check this transition
-                .source(BeerOrderStatusEnum.ALLOCATED).target(BeerOrderStatusEnum.PENDING_INVENTORY).event(BeerOrderEventEnum.ALLOCATION_NO_INVENTORY_FOUND)
+                .and().withExternal()
+                .source(BeerOrderStatusEnum.ALLOCATION_PENDING).target(BeerOrderStatusEnum.PENDING_INVENTORY).event(BeerOrderEventEnum.ALLOCATION_NO_INVENTORY_FOUND)
 
                 .and().withExternal()
                 .source(BeerOrderStatusEnum.ALLOCATED).target(BeerOrderStatusEnum.PICKED_UP).event(BeerOrderEventEnum.PICKED_UP)

@@ -1,5 +1,6 @@
 package elearning.sfg.beer.order.service.services;
 
+import elearning.sfg.beer.brewery.dtos.BeerOrderDto;
 import elearning.sfg.beer.order.service.domain.BeerOrder;
 import elearning.sfg.beer.order.service.domain.BeerOrderEventEnum;
 import elearning.sfg.beer.order.service.domain.BeerOrderStatusEnum;
@@ -64,6 +65,46 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
         } else {
             sendBeerOrderEvent(beerOrderRepository.getOne(beerOrderId), BeerOrderEventEnum.VALIDATION_FAILED);
         }
+    }
+
+    @Override
+    public void beerOrderAllocationApproved(BeerOrderDto beerOrderDto) {
+        BeerOrder beerOrder = beerOrderRepository.getOne(beerOrderDto.getId());
+        sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.ALLOCATION_APPROVED);
+        updateAllocateQty(beerOrderDto);
+
+    }
+
+
+    @Override
+    public void beerOrderAllocationPendingInventory(BeerOrderDto beerOrderDto) {
+        BeerOrder beerOrder = beerOrderRepository.getOne(beerOrderDto.getId());
+
+        //Update BeerOrder State Machine
+        sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.ALLOCATION_NO_INVENTORY_FOUND);
+
+        updateAllocateQty(beerOrderDto);
+    }
+
+    @Override
+    public void beerOrderAllocationFailed(BeerOrderDto beerOrderDto) {
+        BeerOrder beerOrder = beerOrderRepository.getOne(beerOrderDto.getId());
+
+        //Update BeerOrder State Machine
+        sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.ALLOCATION_FAILED);
+    }
+
+
+    private void updateAllocateQty(BeerOrderDto beerOrderDto) {
+        BeerOrder beerOrder = beerOrderRepository.getOne(beerOrderDto.getId());
+
+        beerOrder.getBeerOrderLines().forEach(beerOrderLine -> {
+            beerOrderDto.getBeerOrderLines().forEach(beerOrderLineDto -> {
+                if (beerOrderLine.getId().equals(beerOrderLineDto.getId()))
+                    beerOrderLine.setQuantityAllocated(beerOrderLineDto.getQuantityAllocated());
+            });
+        });
+        beerOrderRepository.saveAndFlush(beerOrder);
     }
 
     //send standard Spring message instead of the Beer enum event
