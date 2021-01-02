@@ -1,10 +1,12 @@
 package elearning.sfg.beer.brewery.events;
 
 import elearning.sfg.beer.brewery.dtos.BeerOrderDto;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@RequiredArgsConstructor
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
