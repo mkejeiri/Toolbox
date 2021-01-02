@@ -1,7 +1,7 @@
 package elearning.sfg.beer.order.service.web.mappers;
 
-import elearning.sfg.beer.order.service.domain.BeerOrderLine;
 import elearning.sfg.beer.brewery.dtos.BeerOrderLineDto;
+import elearning.sfg.beer.order.service.domain.BeerOrderLine;
 import org.mapstruct.DecoratedWith;
 import org.mapstruct.Mapper;
 

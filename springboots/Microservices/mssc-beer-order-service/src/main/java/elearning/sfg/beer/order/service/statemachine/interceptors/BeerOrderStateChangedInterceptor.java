@@ -1,4 +1,4 @@
-package elearning.sfg.beer.order.service.statemachine.Interceptor;
+package elearning.sfg.beer.order.service.statemachine.interceptors;
 
 import elearning.sfg.beer.order.service.domain.BeerOrder;
 import elearning.sfg.beer.order.service.domain.BeerOrderEventEnum;

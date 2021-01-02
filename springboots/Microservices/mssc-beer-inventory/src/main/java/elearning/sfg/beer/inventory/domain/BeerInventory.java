@@ -17,6 +17,18 @@ import java.util.UUID;
 @Entity
 public class BeerInventory extends BaseEntity {
 
+    @Type(type = "org.hibernate.type.UUIDCharType")
+    @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false)
+    private UUID beerId;
+    private String upc;
+    /*
+     * On Hand quantity is always calculated based on actual transactions,
+     * operations and/or inventory cards. On Hand quantity is the quantity you expect to see in your warehouse.
+     * This includes products from sale orders which have yet to be fulfilled.
+     * This does not include products from purchase orders that are yet to be received.
+     * */
+    private Integer quantityOnHand = 0;
+
     @Builder
     public BeerInventory(UUID id, Long version, Timestamp createdDate, Timestamp lastModifiedDate, UUID beerId,
                          String upc, Integer quantityOnHand) {
@@ -25,17 +37,4 @@ public class BeerInventory extends BaseEntity {
         this.upc = upc;
         this.quantityOnHand = quantityOnHand;
     }
-
-    @Type(type="org.hibernate.type.UUIDCharType")
-    @Column(length = 36, columnDefinition = "varchar(36)", updatable = false, nullable = false )
-    private UUID beerId;
-
-    private String upc;
-    /*
-    * On Hand quantity is always calculated based on actual transactions,
-    * operations and/or inventory cards. On Hand quantity is the quantity you expect to see in your warehouse.
-    * This includes products from sale orders which have yet to be fulfilled.
-    * This does not include products from purchase orders that are yet to be received.
-     * */
-    private Integer quantityOnHand = 0;
 }

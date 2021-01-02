@@ -10,15 +10,23 @@ import org.springframework.jms.support.converter.MessageType;
 @Configuration
 public class JmsConfig {
 
-    //QUEUE Name
+     /*
+    Why do we need to create objects for messages in the same package, with the same name?
+    We don't need to. Spring will de-serialize to a target type with Jackson.
+    This is a fully qualified class - i.e. package and name.
+    Optionally, we could use Jackson to deserialize to whatever type we wanted.
+    * */
+
+    //QUEUE Names
     public static final String BREWING_REQUEST_QUEUE = "BREWING_REQUEST_QUEUE";
     public static final String NEW_INVENTORY_QUEUE = "NEW_INVENTORY_QUEUE";
+
     @Bean
     public MessageConverter messageConverter(
             ObjectMapper objectMapper //Spring managed object mapper injection (used by web endpoint).
             //OffSetTime mapping not working properly => reconfigure Jackson JMS message converter
             //to use the Spring Boot managed Jackson object mapper.
-    ){
+    ) {
         //Message converter that uses Jackson 2.x to convert messages to and from JSON. Maps an
         // object to a BytesMessage, or to a TextMessage if the targetType is set to MessageType.TEXT.
         // Converts from a TextMessage or BytesMessage to an object.

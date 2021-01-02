@@ -5,7 +5,7 @@ import elearning.sfg.beer.order.service.domain.BeerOrderEventEnum;
 import elearning.sfg.beer.order.service.domain.BeerOrderStatusEnum;
 import elearning.sfg.beer.order.service.repositories.BeerOrderRepository;
 import elearning.sfg.beer.order.service.statemachine.BeerOrderStateMachineConfig;
-import elearning.sfg.beer.order.service.statemachine.Interceptor.BeerOrderStateChangedInterceptor;
+import elearning.sfg.beer.order.service.statemachine.interceptors.BeerOrderStateChangedInterceptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
@@ -15,6 +15,8 @@ import org.springframework.statemachine.config.StateMachineFactory;
 import org.springframework.statemachine.support.DefaultStateMachineContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -36,17 +38,25 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
         BeerOrder savedBeerOrder = beerOrderRepository.save(beerOrder);
 
         //sending event to the state machine
-        sendBeerOrderEvent(beerOrder,BeerOrderEventEnum.VALIDATION_REQUESTED);
+        sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.VALIDATION_REQUESTED);
 
         return savedBeerOrder;
     }
 
+    @Override
+    public void processValidation(UUID beerOrderId, boolean isValid) {
+        if (isValid) {
+            sendBeerOrderEvent(beerOrderRepository.getOne(beerOrderId), BeerOrderEventEnum.VALIDATION_APPROVED);
+        } else {
+            sendBeerOrderEvent(beerOrderRepository.getOne(beerOrderId), BeerOrderEventEnum.VALIDATION_FAILED);
+        }
+    }
 
     //send standard Spring message instead of the Beer enum event
     @Transactional
     private void sendBeerOrderEvent(BeerOrder beerOrder, BeerOrderEventEnum event) {
 
-        StateMachine<BeerOrderStatusEnum, BeerOrderEventEnum> sm=build(beerOrder);
+        StateMachine<BeerOrderStatusEnum, BeerOrderEventEnum> sm = build(beerOrder);
         //standard Spring message infrastructure supported by the state machine.
         Message message = MessageBuilder.withPayload(event)
                 //the state machine is beerId aware.

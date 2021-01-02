@@ -1,7 +1,7 @@
 package elearning.sfg.beer.inventory.web.mappers;
 
-import elearning.sfg.beer.inventory.domain.BeerInventory;
 import elearning.sfg.beer.brewery.dtos.BeerInventoryDto;
+import elearning.sfg.beer.inventory.domain.BeerInventory;
 import org.mapstruct.Mapper;
 
 @Mapper(uses = {DateMapper.class})

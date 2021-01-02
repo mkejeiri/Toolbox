@@ -17,6 +17,18 @@ import java.util.UUID;
 @Entity
 public class BeerOrderLine extends BaseEntity {
 
+    @ManyToOne
+    private BeerOrder beerOrder;
+    private UUID beerId;
+    private String upc;
+    private Integer orderQuantity = 0;
+    /*
+     * Allocated quantity represents the quantity of the product reserved to be used in the pending sale
+     * and/or work orders. These orders are not yet completed yet but are authorised, and for successful completion,
+     * items are reserved to avoid double selling. Allocated quantity is used to determine Available quantity
+     * for Quoting, Ordering, and Picking.
+     * */
+    private Integer quantityAllocated = 0;
     @Builder
     public BeerOrderLine(UUID id, Long version, Timestamp createdDate, Timestamp lastModifiedDate,
                          BeerOrder beerOrder, UUID beerId, String upc, Integer orderQuantity,
@@ -28,18 +40,4 @@ public class BeerOrderLine extends BaseEntity {
         this.orderQuantity = orderQuantity;
         this.quantityAllocated = quantityAllocated;
     }
-
-    @ManyToOne
-    private BeerOrder beerOrder;
-
-    private UUID beerId;
-    private String upc;
-    private Integer orderQuantity = 0;
-    /*
-    * Allocated quantity represents the quantity of the product reserved to be used in the pending sale
-    * and/or work orders. These orders are not yet completed yet but are authorised, and for successful completion,
-    * items are reserved to avoid double selling. Allocated quantity is used to determine Available quantity
-    * for Quoting, Ordering, and Picking.
-     * */
-    private Integer quantityAllocated = 0;
 }

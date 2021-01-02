@@ -9,11 +9,24 @@ import org.springframework.jms.support.converter.MessageType;
 @Configuration
 public class JmsConfig {
 
-    //QUEUE Name
-    public static final String MY_QUEUE = "my-hello-world";
-    public static final String MY_SEND_RCV_QUEUE = "ReplyBackWithWorld";
+
+    /*
+    Why do we need to create objects for messages in the same package, with the same name?
+    We don't need to. Spring will de-serialize to a target type with Jackson.
+    This is a fully qualified class - i.e. package and name.
+    Optionally, we could use Jackson to deserialize to whatever type we wanted.
+    * */
+
+    //QUEUE Names
+    public static final String VALIDATE_ORDER_QUEUE = "VALIDATE_ORDER_QUEUE";
+    public static final String VALIDATE_ORDER_RESPONSE_QUEUE = "VALIDATE_ORDER_RESPONSE_QUEUE";
+    public static final String ALLOCATE_ORDER_QUEUE = "ALLOCATE_ORDER_QUEUE";
+    public static final String ALLOCATE_ORDER_RESPONSE_QUEUE = "ALLOCATE_ORDER_RESPONSE_QUEUE";
+    public static final String ALLOCATE_FAILURE_QUEUE = "ALLOCATE_FAILURE_QUEUE";
+    public static final String DEALLOCATE_ORDER_QUEUE = "DEALLOCATE_ORDER_QUEUE";
+
     @Bean
-    public MessageConverter messageConverter(){
+    public MessageConverter messageConverter() {
         //Message converter that uses Jackson 2.x to convert messages to and from JSON. Maps an
         // object to a BytesMessage, or to a TextMessage if the targetType is set to MessageType.TEXT.
         // Converts from a TextMessage or BytesMessage to an object.

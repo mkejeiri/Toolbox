@@ -1,13 +1,14 @@
 package elearning.sfg.beer.order.service.web.mappers;
 
-import elearning.sfg.beer.order.service.domain.BeerOrderLine;
-import elearning.sfg.beer.order.service.services.beer.BeerService;
 import elearning.sfg.beer.brewery.dtos.BeerDto;
 import elearning.sfg.beer.brewery.dtos.BeerOrderLineDto;
+import elearning.sfg.beer.order.service.domain.BeerOrderLine;
+import elearning.sfg.beer.order.service.services.beer.BeerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.Optional;
+
 public abstract class BeerOrderLineMapperDecorator implements BeerOrderLineMapper {
 
     private BeerService beerService;

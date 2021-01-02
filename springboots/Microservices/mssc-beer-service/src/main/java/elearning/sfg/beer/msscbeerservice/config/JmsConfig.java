@@ -13,7 +13,20 @@ import org.springframework.jms.support.converter.MessageType;
 @Configuration
 public class JmsConfig {
 
-    //QUEUE Name
+    /*
+    Why do we need to create objects for messages in the same package, with the same name?
+    We don't need to. Spring will de-serialize to a target type with Jackson.
+    This is a fully qualified class - i.e. package and name.
+    Optionally, we could use Jackson to deserialize to whatever type we wanted.
+    * */
+
+    //QUEUE Names
+    public static final String VALIDATE_ORDER_QUEUE = "VALIDATE_ORDER_QUEUE";
+    public static final String VALIDATE_ORDER_RESPONSE_QUEUE = "VALIDATE_ORDER_RESPONSE_QUEUE";
+    public static final String ALLOCATE_ORDER_QUEUE = "ALLOCATE_ORDER_QUEUE";
+    public static final String ALLOCATE_ORDER_RESPONSE_QUEUE = "ALLOCATE_ORDER_RESPONSE_QUEUE";
+    public static final String ALLOCATE_FAILURE_QUEUE = "ALLOCATE_FAILURE_QUEUE";
+    public static final String DEALLOCATE_ORDER_QUEUE = "DEALLOCATE_ORDER_QUEUE" ;
     public static final String BREWING_REQUEST_QUEUE = "BREWING_REQUEST_QUEUE";
     public static final String NEW_INVENTORY_QUEUE = "NEW_INVENTORY_QUEUE";
 
