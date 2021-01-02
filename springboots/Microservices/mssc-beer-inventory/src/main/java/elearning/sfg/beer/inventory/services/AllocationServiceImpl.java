@@ -2,8 +2,8 @@ package elearning.sfg.beer.inventory.services;
 
 import elearning.sfg.beer.inventory.domain.BeerInventory;
 import elearning.sfg.beer.inventory.repositories.BeerInventoryRepository;
-import elearning.sfg.beer.inventory.web.model.BeerOrderDto;
-import elearning.sfg.beer.inventory.web.model.BeerOrderLineDto;
+import elearning.sfg.beer.brewery.dtos.BeerOrderDto;
+import elearning.sfg.beer.brewery.dtos.BeerOrderLineDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

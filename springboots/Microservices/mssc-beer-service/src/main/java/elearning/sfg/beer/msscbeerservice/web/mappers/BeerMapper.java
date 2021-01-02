@@ -1,6 +1,6 @@
 package elearning.sfg.beer.msscbeerservice.web.mappers;
 
-import elearning.sfg.beer.msscbeerservice.web.model.BeerDto;
+import elearning.sfg.beer.brewery.dtos.BeerDto;
 import elearning.sfg.beer.msscbeerservice.domain.Beer;
 import org.mapstruct.DecoratedWith;
 import org.mapstruct.Mapper;

@@ -1,6 +1,6 @@
 package elearning.sfg.beer.msscbeerservice.repositories;
 
-import elearning.sfg.beer.msscbeerservice.web.model.BeerStyleEnum;
+import elearning.sfg.beer.brewery.dtos.BeerStyleEnum;
 import elearning.sfg.beer.msscbeerservice.domain.Beer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

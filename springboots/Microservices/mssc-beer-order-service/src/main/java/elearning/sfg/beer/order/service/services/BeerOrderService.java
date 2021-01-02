@@ -1,8 +1,8 @@
 package elearning.sfg.beer.order.service.services;
 
 
-import elearning.sfg.beer.order.service.web.model.BeerOrderDto;
-import elearning.sfg.beer.order.service.web.model.BeerOrderPagedList;
+import elearning.sfg.beer.brewery.dtos.BeerOrderDto;
+import elearning.sfg.beer.brewery.dtos.BeerOrderPagedList;
 import org.springframework.data.domain.Pageable;
 
 import java.util.UUID;

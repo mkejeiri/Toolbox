@@ -2,7 +2,7 @@ package elearning.sfg.beer.inventory.web.controllers;
 
 import elearning.sfg.beer.inventory.repositories.BeerInventoryRepository;
 import elearning.sfg.beer.inventory.web.mappers.BeerInventoryMapper;
-import elearning.sfg.beer.inventory.web.model.BeerInventoryDto;
+import elearning.sfg.beer.brewery.dtos.BeerInventoryDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,8 +1,8 @@
 package elearning.sfg.beer.msscbeerservice.web.controller;
 
-import elearning.sfg.beer.msscbeerservice.web.model.BeerDto;
-import elearning.sfg.beer.msscbeerservice.web.model.BeerPagedList;
-import elearning.sfg.beer.msscbeerservice.web.model.BeerStyleEnum;
+import elearning.sfg.beer.brewery.dtos.BeerDto;
+import elearning.sfg.beer.brewery.dtos.BeerPagedList;
+import elearning.sfg.beer.brewery.dtos.BeerStyleEnum;
 import elearning.sfg.beer.msscbeerservice.services.BeerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;

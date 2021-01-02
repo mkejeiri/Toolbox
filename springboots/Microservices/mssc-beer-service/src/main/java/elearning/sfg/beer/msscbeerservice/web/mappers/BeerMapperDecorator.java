@@ -2,7 +2,7 @@ package elearning.sfg.beer.msscbeerservice.web.mappers;
 
 import elearning.sfg.beer.msscbeerservice.domain.Beer;
 import elearning.sfg.beer.msscbeerservice.services.inventory.BeerInventoryService;
-import elearning.sfg.beer.msscbeerservice.web.model.BeerDto;
+import elearning.sfg.beer.brewery.dtos.BeerDto;
 import org.springframework.beans.factory.annotation.Autowired;
 
 

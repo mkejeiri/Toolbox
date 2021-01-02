@@ -1,6 +1,6 @@
 package elearning.sfg.beer.msscbeerservice.services.brewing;
 
-import elearning.sfg.beer.common.events.BrewBeerEvent;
+import elearning.sfg.beer.brewery.events.BrewBeerEvent;
 import elearning.sfg.beer.msscbeerservice.config.JmsConfig;
 import elearning.sfg.beer.msscbeerservice.domain.Beer;
 import elearning.sfg.beer.msscbeerservice.repositories.BeerRepository;

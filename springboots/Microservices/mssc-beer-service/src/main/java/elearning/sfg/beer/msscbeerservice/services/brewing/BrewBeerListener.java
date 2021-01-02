@@ -1,11 +1,11 @@
 package elearning.sfg.beer.msscbeerservice.services.brewing;
 
-import elearning.sfg.beer.common.events.BrewBeerEvent;
-import elearning.sfg.beer.common.events.NewInventoryEvent;
+import elearning.sfg.beer.brewery.events.BrewBeerEvent;
+import elearning.sfg.beer.brewery.events.NewInventoryEvent;
 import elearning.sfg.beer.msscbeerservice.config.JmsConfig;
 import elearning.sfg.beer.msscbeerservice.domain.Beer;
 import elearning.sfg.beer.msscbeerservice.repositories.BeerRepository;
-import elearning.sfg.beer.msscbeerservice.web.model.BeerDto;
+import elearning.sfg.beer.brewery.dtos.BeerDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jms.annotation.JmsListener;

@@ -1,6 +1,6 @@
 package elearning.sfg.beer.inventory.services;
 
-import elearning.sfg.beer.common.events.NewInventoryEvent;
+import elearning.sfg.beer.brewery.events.NewInventoryEvent;
 import elearning.sfg.beer.inventory.config.JmsConfig;
 import elearning.sfg.beer.inventory.domain.BeerInventory;
 import elearning.sfg.beer.inventory.repositories.BeerInventoryRepository;

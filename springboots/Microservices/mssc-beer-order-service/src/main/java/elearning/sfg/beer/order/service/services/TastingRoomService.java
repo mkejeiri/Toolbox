@@ -2,10 +2,10 @@ package elearning.sfg.beer.order.service.services;
 
 import elearning.sfg.beer.order.service.bootstrap.BeerOrderBootStrap;
 import elearning.sfg.beer.order.service.repositories.BeerOrderRepository;
-import elearning.sfg.beer.order.service.web.model.BeerOrderDto;
+import elearning.sfg.beer.brewery.dtos.BeerOrderDto;
 import elearning.sfg.beer.order.service.domain.Customer;
 import elearning.sfg.beer.order.service.repositories.CustomerRepository;
-import elearning.sfg.beer.order.service.web.model.BeerOrderLineDto;
+import elearning.sfg.beer.brewery.dtos.BeerOrderLineDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;

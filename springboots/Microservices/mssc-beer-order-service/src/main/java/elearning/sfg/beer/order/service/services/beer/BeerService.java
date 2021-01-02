@@ -1,6 +1,6 @@
 package elearning.sfg.beer.order.service.services.beer;
 
-import elearning.sfg.beer.order.service.web.model.BeerDto;
+import elearning.sfg.beer.brewery.dtos.BeerDto;
 
 import java.util.Optional;
 import java.util.UUID;

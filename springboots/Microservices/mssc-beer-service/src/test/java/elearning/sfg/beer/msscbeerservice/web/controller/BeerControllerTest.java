@@ -1,8 +1,8 @@
 package elearning.sfg.beer.msscbeerservice.web.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import elearning.sfg.beer.msscbeerservice.web.model.BeerDto;
-import elearning.sfg.beer.msscbeerservice.web.model.BeerStyleEnum;
+import elearning.sfg.beer.brewery.dtos.BeerDto;
+import elearning.sfg.beer.brewery.dtos.BeerStyleEnum;
 import elearning.sfg.beer.msscbeerservice.bootstrap.BeerLoader;
 import elearning.sfg.beer.msscbeerservice.services.BeerService;
 import org.junit.jupiter.api.Test;
