@@ -29,6 +29,7 @@ public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<B
     //@Qualifier("validateRequestAction")//has been omitted
     //and kept for educational purposes(reason described above)
     private final Action<BeerOrderStatusEnum, BeerOrderEventEnum> validateRequestAction;
+    private final Action<BeerOrderStatusEnum, BeerOrderEventEnum> allocateRequestAction;
 
     //@Qualifier("orderIdMessageHeaderNullGuard")//has been omitted
     // and kept for educational purposes(reason described above)
@@ -55,7 +56,6 @@ public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<B
         //VALIDATION_REQUESTED, VALIDATION_APPROVED, VALIDATION_FAILED,
         //    ALLOCATION_APPROVED, ALLOCATION_NO_INVENTORY, ALLOCATION_FAILED, PICKED_UP
         transitions.withExternal()
-                //doesn't cause a state change
                 .source(BeerOrderStatusEnum.NEW).target(BeerOrderStatusEnum.VALIDATION_PENDING).event(BeerOrderEventEnum.VALIDATION_REQUESTED)
                 .action(validateRequestAction)
                 .guard(orderIdMessageHeaderNullGuard)
@@ -69,7 +69,8 @@ public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<B
 
                 .and().withExternal()
                 .source(BeerOrderStatusEnum.VALIDATED).target(BeerOrderStatusEnum.ALLOCATION_PENDING).event(BeerOrderEventEnum.ALLOCATION_REQUESTED)
-                //.action(authAction)
+                .action(allocateRequestAction)
+                .guard(orderIdMessageHeaderNullGuard)
 
                 .and().withExternal()
                 .source(BeerOrderStatusEnum.ALLOCATION_PENDING).target(BeerOrderStatusEnum.ALLOCATED).event(BeerOrderEventEnum.ALLOCATION_APPROVED)

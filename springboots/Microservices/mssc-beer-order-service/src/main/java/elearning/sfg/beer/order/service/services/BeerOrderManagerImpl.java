@@ -46,7 +46,21 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
     @Override
     public void processValidation(UUID beerOrderId, boolean isValid) {
         if (isValid) {
-            sendBeerOrderEvent(beerOrderRepository.getOne(beerOrderId), BeerOrderEventEnum.VALIDATION_APPROVED);
+
+            BeerOrder beerOrder = beerOrderRepository.getOne(beerOrderId);
+
+            //1- when we sendBeerOrderEvent, the BeerOrderStateChangedInterceptor will persiste beerOrder into the DB
+            //and it becomes a stale beerOrder object.
+            sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.VALIDATION_APPROVED);
+
+            //2- need to fetch the beerOrder again from the DB.
+            //otherwise hibernate will guess that "beerOrder" is a new version!
+            //unless we operate on current version of that object from the db.
+            //Hibernate could have cached this last saved "beerOrder" order (most likely no perfomance hit there)
+            BeerOrder hydratedBeerOrder = beerOrderRepository.getOne(beerOrderId);
+
+            sendBeerOrderEvent(hydratedBeerOrder, BeerOrderEventEnum.ALLOCATION_REQUESTED);
+
         } else {
             sendBeerOrderEvent(beerOrderRepository.getOne(beerOrderId), BeerOrderEventEnum.VALIDATION_FAILED);
         }
