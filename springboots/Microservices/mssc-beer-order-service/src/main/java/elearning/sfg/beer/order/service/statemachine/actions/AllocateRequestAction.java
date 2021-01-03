@@ -31,12 +31,12 @@ public class AllocateRequestAction implements Action<BeerOrderStatusEnum, BeerOr
         String beerOrderId = (String) context.getMessage()
                 .getHeaders().get(BeerOrderStateMachineConfig.BEER_ORDER_ID_HEADER);
 
-        Optional<BeerOrder> beerOrder = beerOrderRepository.findById(UUID.fromString(beerOrderId));
+        Optional<BeerOrder> beerOrderOptional = beerOrderRepository.findById(UUID.fromString(beerOrderId));
 
-        beerOrder.ifPresentOrElse(order -> {
+        beerOrderOptional.ifPresentOrElse(beerOrder -> {
             AllocateOrderRequested validateOrderRequested = AllocateOrderRequested
                     .builder()
-                    .beerOrderDto(beerOrderMapper.beerOrderToDto(order))
+                    .beerOrderDto(beerOrderMapper.beerOrderToDto(beerOrder))
                     .build();
 
             jmsTemplate.convertAndSend(JmsConfig.ALLOCATE_ORDER_QUEUE, validateOrderRequested);

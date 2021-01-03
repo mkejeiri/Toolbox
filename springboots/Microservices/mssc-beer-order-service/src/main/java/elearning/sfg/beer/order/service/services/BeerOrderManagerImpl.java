@@ -107,6 +107,14 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
         }, () -> log.debug("Not found beerOrderId: " + beerOrderDto.getId()));
     }
 
+    @Override
+    public void beerOrderPickedUp(UUID beerOrderId) {
+        Optional<BeerOrder> beerOrderOptional = beerOrderRepository.findById(beerOrderId);
+        beerOrderOptional.ifPresentOrElse(beerOrder -> {
+            //Update BeerOrder State Machine
+            sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.PICKED_UP);
+        }, () -> log.debug("Not found beerOrderId: " + beerOrderId));
+    }
 
     private void updateAllocateQty(BeerOrderDto beerOrderDto) {
 
