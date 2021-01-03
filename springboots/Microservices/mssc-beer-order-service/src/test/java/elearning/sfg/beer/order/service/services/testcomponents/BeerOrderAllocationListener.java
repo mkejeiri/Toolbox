@@ -13,8 +13,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class BeerOrderAllocationListener
-{
+public class BeerOrderAllocationListener {
     private final JmsTemplate jmsTemplate;
 
     @JmsListener(destination = JmsConfig.ALLOCATE_ORDER_QUEUE)
@@ -23,24 +22,27 @@ public class BeerOrderAllocationListener
 
         boolean isPendingInventory = "partial-allocation".equals(requested.getBeerOrderDto().getCustomerRef());
         boolean isAllocationError = "fail-allocation".equals(requested.getBeerOrderDto().getCustomerRef());
+        boolean isSendResponse = !"dont-allocate".equals(requested.getBeerOrderDto().getCustomerRef());
 
-        //do full allocation on the order
-        requested.getBeerOrderDto().getBeerOrderLines().forEach(line -> {
-            if (isPendingInventory) {
-                line.setQuantityAllocated(line.getOrderQuantity() - 1);
-            } else {
-                line.setQuantityAllocated(line.getOrderQuantity());
-            }
-        });
+        if (isSendResponse) {
+            //do full allocation on the order
+            requested.getBeerOrderDto().getBeerOrderLines().forEach(line -> {
+                if (isPendingInventory) {
+                    line.setQuantityAllocated(line.getOrderQuantity() - 1);
+                } else {
+                    line.setQuantityAllocated(line.getOrderQuantity());
+                }
+            });
 
-        AllocateOrderResult allocateOrderResult = AllocateOrderResult.builder()
-                .beerOrderDto(requested.getBeerOrderDto())
-                .isPendingInventory(isPendingInventory)
-                .isAllocationError(isAllocationError)
-                .build();
+            AllocateOrderResult allocateOrderResult = AllocateOrderResult.builder()
+                    .beerOrderDto(requested.getBeerOrderDto())
+                    .isPendingInventory(isPendingInventory)
+                    .isAllocationError(isAllocationError)
+                    .build();
 
-        jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_RESPONSE_QUEUE,
-                allocateOrderResult);
+            jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_RESPONSE_QUEUE,
+                    allocateOrderResult);
 
+        }
     }
 }

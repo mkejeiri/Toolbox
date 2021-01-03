@@ -17,6 +17,7 @@ import org.springframework.statemachine.support.DefaultStateMachineContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,6 +29,7 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
     private final BeerOrderRepository beerOrderRepository;
     private final StateMachineFactory<BeerOrderStatusEnum, BeerOrderEventEnum> factory;
     private final BeerOrderStateChangedInterceptor beerOrderStateChangedInterceptor;
+    private final EntityManager entityManager;
 
     @Transactional
     @Override
@@ -48,7 +50,11 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
     @Transactional
     @Override
     public void processValidation(UUID beerOrderId, boolean isValid) {
-        log.debug("processValidation beerOrderId : " + beerOrderId + "IsValid: "+ isValid);
+
+        //Racing condition with the interceptor, we need to flush before entering into this transaction.
+        entityManager.flush();
+
+        log.debug("processValidation beerOrderId : " + beerOrderId + "IsValid: " + isValid);
 
         Optional<BeerOrder> beerOrderOptional = beerOrderRepository.findById(beerOrderId);
         beerOrderOptional.ifPresentOrElse(beerOrder -> {
@@ -84,7 +90,6 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
     }
 
 
-
     @Override
     public void beerOrderAllocationPendingInventory(BeerOrderDto beerOrderDto) {
 
@@ -109,10 +114,18 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
 
     @Override
     public void beerOrderPickedUp(UUID beerOrderId) {
-        Optional<BeerOrder> beerOrderOptional = beerOrderRepository.findById(beerOrderId);
-        beerOrderOptional.ifPresentOrElse(beerOrder -> {
+
+        beerOrderRepository.findById(beerOrderId).ifPresentOrElse(beerOrder -> {
             //Update BeerOrder State Machine
             sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.PICKED_UP);
+        }, () -> log.debug("Not found beerOrderId: " + beerOrderId));
+    }
+
+    @Override
+    public void cancelOrder(UUID beerOrderId) {
+        beerOrderRepository.findById(beerOrderId).ifPresentOrElse(beerOrder -> {
+            //Update BeerOrder State Machine
+            sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.ORDER_CANCELLED);
         }, () -> log.debug("Not found beerOrderId: " + beerOrderId));
     }
 
