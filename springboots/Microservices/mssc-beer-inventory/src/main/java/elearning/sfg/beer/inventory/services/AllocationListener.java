@@ -25,7 +25,8 @@ public class AllocationListener {
 
         try {
             Boolean allocationResult = allocationService.allocateOrder(allocateOrderRequested.getBeerOrderDto());
-            builder.isAllocationError(!allocationResult);
+            builder.isPendingInventory(!allocationResult);
+            builder.isAllocationError(false);
 
         } catch (Exception e) {
             builder.isAllocationError(true);
