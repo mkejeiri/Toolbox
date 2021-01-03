@@ -17,6 +17,7 @@ import org.springframework.statemachine.support.DefaultStateMachineContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -44,67 +45,81 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
         return savedBeerOrder;
     }
 
+    @Transactional
     @Override
     public void processValidation(UUID beerOrderId, boolean isValid) {
-        if (isValid) {
+        log.debug("processValidation beerOrderId : " + beerOrderId + "IsValid: "+ isValid);
 
-            BeerOrder beerOrder = beerOrderRepository.getOne(beerOrderId);
+        Optional<BeerOrder> beerOrderOptional = beerOrderRepository.findById(beerOrderId);
+        beerOrderOptional.ifPresentOrElse(beerOrder -> {
+            if (isValid) {
+                //1- when we sendBeerOrderEvent, the BeerOrderStateChangedInterceptor will persist beerOrder into the DB
+                //and it becomes a stale beerOrder object.
+                sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.VALIDATION_APPROVED);
 
-            //1- when we sendBeerOrderEvent, the BeerOrderStateChangedInterceptor will persiste beerOrder into the DB
-            //and it becomes a stale beerOrder object.
-            sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.VALIDATION_APPROVED);
+                //2- need to fetch the beerOrder again from the DB.
+                //otherwise hibernate will guess that "beerOrder" is a new version!
+                //unless we operate on current version of that object from the db.
+                //Hibernate could have cached this last saved "beerOrder" order (most likely no performance hit there)
+                BeerOrder hydratedBeerOrder = beerOrderRepository.findById(beerOrderId).get();
 
-            //2- need to fetch the beerOrder again from the DB.
-            //otherwise hibernate will guess that "beerOrder" is a new version!
-            //unless we operate on current version of that object from the db.
-            //Hibernate could have cached this last saved "beerOrder" order (most likely no perfomance hit there)
-            BeerOrder hydratedBeerOrder = beerOrderRepository.getOne(beerOrderId);
+                sendBeerOrderEvent(hydratedBeerOrder, BeerOrderEventEnum.ALLOCATION_REQUESTED);
 
-            sendBeerOrderEvent(hydratedBeerOrder, BeerOrderEventEnum.ALLOCATION_REQUESTED);
+            } else {
+                sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.VALIDATION_FAILED);
+            }
 
-        } else {
-            sendBeerOrderEvent(beerOrderRepository.getOne(beerOrderId), BeerOrderEventEnum.VALIDATION_FAILED);
-        }
+        }, () -> log.debug("not found beerOrderId : " + beerOrderId));
     }
 
+    @Transactional
     @Override
     public void beerOrderAllocationApproved(BeerOrderDto beerOrderDto) {
-        BeerOrder beerOrder = beerOrderRepository.getOne(beerOrderDto.getId());
-        sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.ALLOCATION_APPROVED);
-        updateAllocateQty(beerOrderDto);
 
+        Optional<BeerOrder> beerOrderOptional = beerOrderRepository.findById(beerOrderDto.getId());
+        beerOrderOptional.ifPresentOrElse(beerOrder -> {
+            sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.ALLOCATION_APPROVED);
+            updateAllocateQty(beerOrderDto);
+        }, () -> log.debug("Not found beerOrderI " + beerOrderDto.getId()));
     }
 
 
+    @Transactional
     @Override
     public void beerOrderAllocationPendingInventory(BeerOrderDto beerOrderDto) {
-        BeerOrder beerOrder = beerOrderRepository.getOne(beerOrderDto.getId());
 
-        //Update BeerOrder State Machine
-        sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.ALLOCATION_NO_INVENTORY_FOUND);
+        Optional<BeerOrder> beerOrderOptional = beerOrderRepository.findById(beerOrderDto.getId());
+        beerOrderOptional.ifPresentOrElse(beerOrder -> {
+            //Update BeerOrder State Machine
+            sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.ALLOCATION_NO_INVENTORY_FOUND);
 
-        updateAllocateQty(beerOrderDto);
+            updateAllocateQty(beerOrderDto);
+        }, () -> log.debug("Not found beerOrderId: " + beerOrderDto.getId()));
     }
 
+    @Transactional
     @Override
     public void beerOrderAllocationFailed(BeerOrderDto beerOrderDto) {
-        BeerOrder beerOrder = beerOrderRepository.getOne(beerOrderDto.getId());
-
-        //Update BeerOrder State Machine
-        sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.ALLOCATION_FAILED);
+        Optional<BeerOrder> beerOrderOptional = beerOrderRepository.findById(beerOrderDto.getId());
+        beerOrderOptional.ifPresentOrElse(beerOrder -> {
+            //Update BeerOrder State Machine
+            sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.ALLOCATION_FAILED);
+        }, () -> log.debug("Not found beerOrderId: " + beerOrderDto.getId()));
     }
 
 
     private void updateAllocateQty(BeerOrderDto beerOrderDto) {
-        BeerOrder beerOrder = beerOrderRepository.getOne(beerOrderDto.getId());
 
-        beerOrder.getBeerOrderLines().forEach(beerOrderLine -> {
-            beerOrderDto.getBeerOrderLines().forEach(beerOrderLineDto -> {
-                if (beerOrderLine.getId().equals(beerOrderLineDto.getId()))
-                    beerOrderLine.setQuantityAllocated(beerOrderLineDto.getQuantityAllocated());
+        Optional<BeerOrder> beerOrderOptional = beerOrderRepository.findById(beerOrderDto.getId());
+        beerOrderOptional.ifPresentOrElse(beerOrder -> {
+            beerOrder.getBeerOrderLines().forEach(beerOrderLine -> {
+                beerOrderDto.getBeerOrderLines().forEach(beerOrderLineDto -> {
+                    if (beerOrderLine.getId().equals(beerOrderLineDto.getId()))
+                        beerOrderLine.setQuantityAllocated(beerOrderLineDto.getQuantityAllocated());
+                });
             });
-        });
-        beerOrderRepository.saveAndFlush(beerOrder);
+            beerOrderRepository.saveAndFlush(beerOrder);
+        }, () -> log.debug("Not found beerOrderId: " + beerOrderDto.getId()));
     }
 
     //send standard Spring message instead of the Beer enum event

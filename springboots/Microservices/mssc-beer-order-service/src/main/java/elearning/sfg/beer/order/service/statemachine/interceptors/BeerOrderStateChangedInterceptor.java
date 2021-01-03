@@ -13,6 +13,7 @@ import org.springframework.statemachine.state.State;
 import org.springframework.statemachine.support.StateMachineInterceptorAdapter;
 import org.springframework.statemachine.transition.Transition;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -26,7 +27,7 @@ public class BeerOrderStateChangedInterceptor extends StateMachineInterceptorAda
 
     //Intercept state machine changes and save them into DB.
     //this will be called up on before machine state change.
-    //@Transactional
+    @Transactional
     @Override
     public void preStateChange(State<BeerOrderStatusEnum, BeerOrderEventEnum> state, Message<BeerOrderEventEnum> message,
                                Transition<BeerOrderStatusEnum, BeerOrderEventEnum> transition,
@@ -36,12 +37,32 @@ public class BeerOrderStateChangedInterceptor extends StateMachineInterceptorAda
             Optional.ofNullable(UUID.class.cast(msg.getHeaders()
                     .getOrDefault(BeerOrderStateMachineConfig.BEER_ORDER_ID_HEADER, -1)))
                     .ifPresent(beerOrderId -> {
-                        BeerOrder beerOrder = beerOrderRepository.getOne(beerOrderId);
-                        beerOrder.setOrderStatus(state.getId());
-
-                        //hibernate save is write lazily to the DB, saveAndFlush force it to write to db right away!
-                        beerOrderRepository.saveAndFlush(beerOrder);
+                        Optional<BeerOrder> beerOrder = beerOrderRepository.findById(beerOrderId);
+                        beerOrder.ifPresentOrElse(order -> {
+                            log.debug("################## state ###################");
+                            log.debug(state.getId().toString());
+                            log.debug("#####################################");
+                            order.setOrderStatus(state.getId());
+                            //hibernate save is write lazily to the DB, saveAndFlush force it to write to db right away!
+                            beerOrderRepository.saveAndFlush(order);
+                        }, () -> log.debug("not found beerOrderId : " + beerOrderId));
                     });
         });
     }
+
+    /*@Transactional
+    @Override
+    public void preStateChange(State<BeerOrderStatusEnum, BeerOrderEventEnum> state, Message<BeerOrderEventEnum> message, Transition<BeerOrderStatusEnum, BeerOrderEventEnum> transition, StateMachine<BeerOrderStatusEnum, BeerOrderEventEnum> stateMachine) {
+        log.debug("Pre-State Change");
+
+        Optional.ofNullable(message)
+                .flatMap(msg -> Optional.ofNullable((UUID) msg.getHeaders().getOrDefault(BeerOrderStateMachineConfig.BEER_ORDER_ID_HEADER, null)))
+                .ifPresent(orderId -> {
+                    log.debug("Saving state for order id: " + orderId + " Status: " + state.getId());
+
+                    BeerOrder beerOrder = beerOrderRepository.getOne(orderId);
+                    beerOrder.setOrderStatus(state.getId());
+                    beerOrderRepository.saveAndFlush(beerOrder);
+                });
+    }*/
 }

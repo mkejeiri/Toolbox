@@ -25,8 +25,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import static com.github.jenspiegsa.wiremockextension.ManagedWireMockServer.with;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -57,7 +57,7 @@ class BeerOrderManagerImplIT {
     UUID beerId = UUID.randomUUID();
 
     public static final int PORT = 8083;
-    public final String UPC = "123456789";
+    public final String UPC = "0631234300019";
 
     @TestConfiguration
     static class RestTemplateBuilderProvider {
@@ -81,7 +81,7 @@ class BeerOrderManagerImplIT {
 
 
     @Test
-    void testNewToAllocated() throws JsonProcessingException {
+    void testNewToAllocated() throws JsonProcessingException, InterruptedException {
         BeerDto beerDto = BeerDto.builder()
                 .id(beerId)
                 .upc(UPC)
@@ -90,16 +90,17 @@ class BeerOrderManagerImplIT {
         //BeerPagedList beerPagedList = new BeerPagedList(Arrays.asList(beerDto));
 
         //Create the stub for the post response
-        wireMockServer.stubFor(post(BeerServiceImpl.BEER_UPC_PATH_V1 + UPC)
+        wireMockServer.stubFor(get(BeerServiceImpl.BEER_UPC_PATH_V1 + UPC)
                 .willReturn(okJson(objectMapper.writeValueAsString(beerDto))));
 
         BeerOrder beerOrder = createBeerOrder();
 
-        BeerOrder savedBeerOrder = beerOrderManager.newBeerOrder(beerOrder);
+        Thread.sleep(10000);
 
-        assertNotNull(savedBeerOrder);
-        assertEquals(BeerOrderStatusEnum.ALLOCATED, savedBeerOrder.getOrderStatus());
+       BeerOrder savedBeerOrder = beerOrderManager.newBeerOrder(beerOrder);
 
+       assertNotNull(savedBeerOrder);
+       assertEquals(BeerOrderStatusEnum.ALLOCATED, savedBeerOrder.getOrderStatus());
 
     }
 
