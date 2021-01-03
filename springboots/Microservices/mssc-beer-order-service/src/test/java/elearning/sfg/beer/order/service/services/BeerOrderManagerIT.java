@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jenspiegsa.wiremockextension.WireMockExtension;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import elearning.sfg.beer.brewery.dtos.BeerDto;
+import elearning.sfg.beer.brewery.events.OrderAllocationFailed;
+import elearning.sfg.beer.order.service.config.JmsConfig;
 import elearning.sfg.beer.order.service.domain.BeerOrder;
 import elearning.sfg.beer.order.service.domain.BeerOrderLine;
 import elearning.sfg.beer.order.service.domain.BeerOrderStatusEnum;
@@ -29,6 +31,7 @@ import static com.github.jenspiegsa.wiremockextension.ManagedWireMockServer.with
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.jgroups.util.Util.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -191,10 +194,11 @@ public class BeerOrderManagerIT {
             assertEquals(BeerOrderStatusEnum.ALLOCATION_EXCEPTION, foundOrder.getOrderStatus());
         });
 
-//        Allocation allocationFailureEvent = (AllocationFailureEvent) jmsTemplate.receiveAndConvert(JmsConfig.ALLOCATE_FAILURE_QUEUE);
-//
-//        assertNotNull(allocationFailureEvent);
-//        assertThat(allocationFailureEvent.getOrderId()).isEqualTo(savedBeerOrder.getId());
+        OrderAllocationFailed orderAllocationFailed =
+                (OrderAllocationFailed) jmsTemplate.receiveAndConvert(JmsConfig.ALLOCATE_FAILURE_QUEUE);
+
+        assertNotNull(orderAllocationFailed);
+        assertThat(orderAllocationFailed.getOrderId()).isEqualTo(savedBeerOrder.getId());
     }
 
       public BeerOrder createBeerOrder(){

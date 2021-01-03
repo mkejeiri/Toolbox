@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 
-public class ValidationFailedCompensateAction implements Action<BeerOrderStatusEnum, BeerOrderEventEnum> {
+public class CompensateOrderValidationFailedAction implements Action<BeerOrderStatusEnum, BeerOrderEventEnum> {
 
     @Override
     public void execute(StateContext<BeerOrderStatusEnum, BeerOrderEventEnum> context) {

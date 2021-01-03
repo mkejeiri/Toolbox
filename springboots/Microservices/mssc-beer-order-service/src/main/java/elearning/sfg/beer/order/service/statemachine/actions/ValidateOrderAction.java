@@ -21,7 +21,7 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ValidateRequestAction implements Action<BeerOrderStatusEnum, BeerOrderEventEnum> {
+public class ValidateOrderAction implements Action<BeerOrderStatusEnum, BeerOrderEventEnum> {
     private final JmsTemplate jmsTemplate;
     private final BeerOrderRepository beerOrderRepository;
     private final BeerOrderMapper beerOrderMapper;
