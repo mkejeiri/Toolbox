@@ -15,6 +15,7 @@ import org.springframework.statemachine.StateContext;
 import org.springframework.statemachine.action.Action;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -27,17 +28,21 @@ public class ValidateRequestAction implements Action<BeerOrderStatusEnum, BeerOr
 
     @Override
     public void execute(StateContext<BeerOrderStatusEnum, BeerOrderEventEnum> context) {
-        String beerOrderId = (String) context.getMessage()
+        UUID beerOrderId = (UUID) context.getMessage()
                 .getHeaders().get(BeerOrderStateMachineConfig.BEER_ORDER_ID_HEADER);
 
-        BeerOrder beerOrder = beerOrderRepository.findOneById(UUID.fromString(beerOrderId));
-        ValidateOrderRequested validateOrderRequested = ValidateOrderRequested
-                .builder()
-                .beerOrderDto(beerOrderMapper.beerOrderToDto(beerOrder))
-                .build();
+        Optional<BeerOrder> beerOrder = beerOrderRepository.findById(beerOrderId);
 
-        jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_QUEUE, validateOrderRequested);
-        log.debug("Send validation request to queue for order id: " + beerOrderId);
+        beerOrder.ifPresentOrElse(order -> {
+            ValidateOrderRequested validateOrderRequested = ValidateOrderRequested
+                    .builder()
+                    .beerOrderDto(beerOrderMapper.beerOrderToDto(order))
+                    .build();
+            jmsTemplate.convertAndSend(JmsConfig.VALIDATE_ORDER_QUEUE, validateOrderRequested);
+            log.debug("Send validation request to queue for order id: " + beerOrderId);
+        },
+                () -> log.error("Not found beerOrderId: " + beerOrderId.toString()));
+
 
     }
 }
