@@ -20,6 +20,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -52,7 +54,7 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
     public void processValidation(UUID beerOrderId, boolean isValid) {
 
         //Racing condition with the interceptor, we need to flush before entering into this transaction.
-        entityManager.flush();
+        //entityManager.flush(); //replaced by awaitForStatus fct!
 
         log.debug("processValidation beerOrderId : " + beerOrderId + "IsValid: " + isValid);
 
@@ -62,6 +64,10 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
                 //1- when we sendBeerOrderEvent, the BeerOrderStateChangedInterceptor will persist beerOrder into the DB
                 //and it becomes a stale beerOrder object.
                 sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.VALIDATION_APPROVED);
+
+                //wait for status change into the DB
+                awaitForStatus(beerOrderId, BeerOrderStatusEnum.VALIDATED);
+
 
                 //2- need to fetch the beerOrder again from the DB.
                 //otherwise hibernate will guess that "beerOrder" is a new version!
@@ -97,6 +103,8 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
         beerOrderOptional.ifPresentOrElse(beerOrder -> {
             //Update BeerOrder State Machine
             sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.ALLOCATION_NO_INVENTORY_FOUND);
+
+            awaitForStatus(beerOrder.getId(), BeerOrderStatusEnum.PENDING_INVENTORY);
 
             updateAllocateQty(beerOrderDto);
         }, () -> log.debug("Not found beerOrderId: " + beerOrderDto.getId()));
@@ -142,6 +150,42 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
             beerOrderRepository.saveAndFlush(beerOrder);
         }, () -> log.debug("Not found beerOrderId: " + beerOrderDto.getId()));
     }
+
+    //wait for the changes (statusEnum) to be reflected in the DB
+    private void awaitForStatus(UUID beerOrderId, BeerOrderStatusEnum statusEnum) {
+
+        AtomicBoolean found = new AtomicBoolean(false);
+        AtomicInteger loopCount = new AtomicInteger(0);
+
+        while (!found.get()) {
+            if (loopCount.incrementAndGet() > 10) {
+                found.set(true);
+                log.debug("Loop Retries exceeded");
+            }
+
+            beerOrderRepository.findById(beerOrderId).ifPresentOrElse(beerOrder -> {
+                if (beerOrder.getOrderStatus().equals(statusEnum)) {
+                    found.set(true);
+                    log.debug("Order Found");
+                } else {
+                    log.debug("Order Status Not Equal. Expected: " + statusEnum.name() + " Found: " + beerOrder.getOrderStatus().name());
+                }
+            }, () -> {
+                log.debug("Order Id Not Found");
+            });
+
+            if (!found.get()) {
+                try {
+                    log.debug("Sleeping for retry");
+                    Thread.sleep(100);
+                } catch (Exception e) {
+                    // do nothing
+                }
+            }
+        }
+    }
+
+
 
     //send standard Spring message instead of the Beer enum event
     private void sendBeerOrderEvent(BeerOrder beerOrder, BeerOrderEventEnum event) {
