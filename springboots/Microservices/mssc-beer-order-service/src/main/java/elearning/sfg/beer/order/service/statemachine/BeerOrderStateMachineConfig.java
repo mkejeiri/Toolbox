@@ -32,6 +32,7 @@ public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<B
     private final Action<BeerOrderStatusEnum, BeerOrderEventEnum> allocateOrderAction;
     private final Action<BeerOrderStatusEnum, BeerOrderEventEnum> compensateOrderValidationFailedAction;
     private final Action<BeerOrderStatusEnum, BeerOrderEventEnum> handleOrderAllocationFailedAction;
+    private final Action<BeerOrderStatusEnum, BeerOrderEventEnum> deallocateOrderAction;
 
     //@Qualifier("orderIdMessageHeaderNullGuard")//has been omitted
     // and kept for educational purposes(reason described above)
@@ -118,12 +119,11 @@ public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<B
                 .and().withExternal()
                 .source(BeerOrderStatusEnum.ALLOCATED).target(BeerOrderStatusEnum.CANCELLED)
                 .event(BeerOrderEventEnum.ORDER_CANCELLED)
-                //.action(myAction)
+                .action(deallocateOrderAction)
 
                 .and().withExternal()
                 .source(BeerOrderStatusEnum.PICKED_UP).target(BeerOrderStatusEnum.DELIVERY_EXCEPTION)
                 .event(BeerOrderEventEnum.DELIVERY_FAILED)
-
 
                 .and().withExternal()
                 .source(BeerOrderStatusEnum.PICKED_UP).target(BeerOrderStatusEnum.DELIVERED)
