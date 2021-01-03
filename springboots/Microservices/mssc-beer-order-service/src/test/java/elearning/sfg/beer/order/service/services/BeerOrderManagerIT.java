@@ -1,4 +1,5 @@
 package elearning.sfg.beer.order.service.services;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jenspiegsa.wiremockextension.WireMockExtension;
@@ -173,10 +174,30 @@ public class BeerOrderManagerIT {
         });
     }
 
+    @Test
+    void testAllocationFailure() throws JsonProcessingException {
+        BeerDto beerDto = BeerDto.builder().id(beerId).upc("12345").build();
 
+        wireMockServer.stubFor(get(BeerServiceImpl.BEER_UPC_PATH_V1 + "12345")
+                .willReturn(okJson(objectMapper.writeValueAsString(beerDto))));
 
+        BeerOrder beerOrder = createBeerOrder();
+        beerOrder.setCustomerRef("fail-allocation");
 
-    public BeerOrder createBeerOrder(){
+        BeerOrder savedBeerOrder = beerOrderManager.newBeerOrder(beerOrder);
+
+        await().untilAsserted(() -> {
+            BeerOrder foundOrder = beerOrderRepository.findById(beerOrder.getId()).get();
+            assertEquals(BeerOrderStatusEnum.ALLOCATION_EXCEPTION, foundOrder.getOrderStatus());
+        });
+
+//        Allocation allocationFailureEvent = (AllocationFailureEvent) jmsTemplate.receiveAndConvert(JmsConfig.ALLOCATE_FAILURE_QUEUE);
+//
+//        assertNotNull(allocationFailureEvent);
+//        assertThat(allocationFailureEvent.getOrderId()).isEqualTo(savedBeerOrder.getId());
+    }
+
+      public BeerOrder createBeerOrder(){
         BeerOrder beerOrder = BeerOrder.builder()
                 .customer(testCustomer)
                 .build();
