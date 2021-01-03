@@ -37,7 +37,7 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
         beerOrder.setId(null);
         beerOrder.setOrderStatus(BeerOrderStatusEnum.NEW);
 
-        BeerOrder savedBeerOrder = beerOrderRepository.save(beerOrder);
+        BeerOrder savedBeerOrder = beerOrderRepository.saveAndFlush(beerOrder);
 
         //sending event to the state machine
         sendBeerOrderEvent(beerOrder, BeerOrderEventEnum.VALIDATION_REQUESTED);
@@ -72,7 +72,7 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
         }, () -> log.debug("not found beerOrderId : " + beerOrderId));
     }
 
-    @Transactional
+
     @Override
     public void beerOrderAllocationApproved(BeerOrderDto beerOrderDto) {
 
@@ -84,7 +84,7 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
     }
 
 
-    @Transactional
+
     @Override
     public void beerOrderAllocationPendingInventory(BeerOrderDto beerOrderDto) {
 
@@ -97,7 +97,7 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
         }, () -> log.debug("Not found beerOrderId: " + beerOrderDto.getId()));
     }
 
-    @Transactional
+
     @Override
     public void beerOrderAllocationFailed(BeerOrderDto beerOrderDto) {
         Optional<BeerOrder> beerOrderOptional = beerOrderRepository.findById(beerOrderDto.getId());
@@ -131,7 +131,6 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
     }
 
     //send standard Spring message instead of the Beer enum event
-    @Transactional
     private void sendBeerOrderEvent(BeerOrder beerOrder, BeerOrderEventEnum event) {
 
         StateMachine<BeerOrderStatusEnum, BeerOrderEventEnum> sm = build(beerOrder);
@@ -145,7 +144,6 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
     }
 
     //Build & restore StateMachine from DB.
-    @Transactional
     private StateMachine<BeerOrderStatusEnum, BeerOrderEventEnum> build(BeerOrder beerOrder) {
     /*
     it will make a request of the stateMachineFactory to return back a state machine for that beerOrderId.

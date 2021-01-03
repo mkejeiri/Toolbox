@@ -30,6 +30,7 @@ public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<B
     //and kept for educational purposes(reason described above)
     private final Action<BeerOrderStatusEnum, BeerOrderEventEnum> validateRequestAction;
     private final Action<BeerOrderStatusEnum, BeerOrderEventEnum> allocateRequestAction;
+    private final Action<BeerOrderStatusEnum, BeerOrderEventEnum> validationFailedCompensateAction;
 
     //@Qualifier("orderIdMessageHeaderNullGuard")//has been omitted
     // and kept for educational purposes(reason described above)
@@ -62,6 +63,7 @@ public class BeerOrderStateMachineConfig extends StateMachineConfigurerAdapter<B
 
                 .and().withExternal()
                 .source(BeerOrderStatusEnum.VALIDATION_PENDING).target(BeerOrderStatusEnum.VALIDATION_EXCEPTION).event(BeerOrderEventEnum.VALIDATION_FAILED)
+                .action(validationFailedCompensateAction)
 
                 .and().withExternal()
                 .source(BeerOrderStatusEnum.VALIDATION_PENDING).target(BeerOrderStatusEnum.VALIDATED).event(BeerOrderEventEnum.VALIDATION_APPROVED)
