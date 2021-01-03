@@ -28,6 +28,7 @@ import static com.github.jenspiegsa.wiremockextension.ManagedWireMockServer.with
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.okJson;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -63,13 +64,12 @@ class BeerOrderManagerImplIT {
     static class RestTemplateBuilderProvider {
         //config a wiremock server
         @Bean(destroyMethod = "stop")
-        public WireMockServer wireMockServer(){
+        public WireMockServer wireMockServer() {
             WireMockServer server = with(wireMockConfig().port(PORT));
             server.start();
             return server;
         }
     }
-
 
 
     @BeforeEach
@@ -95,12 +95,24 @@ class BeerOrderManagerImplIT {
 
         BeerOrder beerOrder = createBeerOrder();
 
+
+        //replaced by awaitility
+        /*System.out.println("sleep mode");
         Thread.sleep(10000);
+        System.out.println("Awakening mode");*/
 
-       BeerOrder savedBeerOrder = beerOrderManager.newBeerOrder(beerOrder);
+        await().untilAsserted(() -> {
+        BeerOrder order = beerOrderRepository.findById(beerId).get();
 
-       assertNotNull(savedBeerOrder);
-       assertEquals(BeerOrderStatusEnum.ALLOCATED, savedBeerOrder.getOrderStatus());
+            //todo : BeerOrderStatusEnum.ALLOCATED
+            assertEquals(BeerOrderStatusEnum.ALLOCATION_PENDING, order.getOrderStatus());
+
+        });
+
+        BeerOrder savedBeerOrder = beerOrderManager.newBeerOrder(beerOrder);
+
+        assertNotNull(savedBeerOrder);
+//        assertEquals(BeerOrderStatusEnum.ALLOCATED, savedBeerOrder.getOrderStatus());
 
     }
 
