@@ -33,10 +33,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
+@ExtendWith(WireMockExtension.class)
 //Bring the context
 //Since we have Hibernate in the ClassPath the H2 DB will be automatically wired in.
 @SpringBootTest
-@ExtendWith(WireMockExtension.class)
 class BeerOrderManagerImplIT {
 
     @Autowired
@@ -148,6 +148,25 @@ class BeerOrderManagerImplIT {
     }
 
     @Test
+    void testFailedValidation() throws JsonProcessingException {
+        BeerDto beerDto = BeerDto.builder().id(beerId).upc(UPC).build();
+
+        wireMockServer.stubFor(get(BeerServiceImpl.BEER_UPC_PATH_V1 + UPC)
+                .willReturn(okJson(objectMapper.writeValueAsString(beerDto))));
+
+        BeerOrder beerOrder = createBeerOrder();
+        beerOrder.setCustomerRef("fail-validation");
+
+        BeerOrder savedBeerOrder = beerOrderManager.newBeerOrder(beerOrder);
+
+        await().untilAsserted(() -> {
+            BeerOrder foundOrder = beerOrderRepository.findById(beerOrder.getId()).get();
+
+            assertEquals(BeerOrderStatusEnum.VALIDATION_EXCEPTION, foundOrder.getOrderStatus());
+        });
+    }
+
+    @Test
     void testNewToPickedUp() throws JsonProcessingException {
         BeerDto beerDto = BeerDto.builder().id(beerId).upc(UPC).build();
 
@@ -174,6 +193,8 @@ class BeerOrderManagerImplIT {
 
         assertEquals(BeerOrderStatusEnum.PICKED_UP, pickedUpOrder.getOrderStatus());
     }
+
+
 
     public BeerOrder createBeerOrder() {
 

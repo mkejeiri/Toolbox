@@ -21,9 +21,12 @@ public class BeerOrderValidationListener {
     public  void listenDouble(Message message) {
 
         ValidateOrderRequested requested = (ValidateOrderRequested) message.getPayload();
+        boolean isValid = "fail-validation".equals(requested.getBeerOrderDto().getCustomerRef());
+
+
         ValidateOrderResult validateOrderResult = ValidateOrderResult
                 .builder()
-                .isValid(true)
+                .isValid(isValid)
                 .orderId(requested.getBeerOrderDto().getId())
                 .build();
 

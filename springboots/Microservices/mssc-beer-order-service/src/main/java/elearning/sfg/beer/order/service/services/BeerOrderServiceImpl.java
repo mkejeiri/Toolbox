@@ -70,8 +70,7 @@ public class BeerOrderServiceImpl implements BeerOrderService {
 
             log.debug("Saved Beer Order: " + beerOrder.getId());
 
-            //todo impl
-            //  publisher.publishEvent(new NewBeerOrderEvent(savedBeerOrder));
+            // publisher.publishEvent(new NewBeerOrderEvent(savedBeerOrder));
 
             BeerOrder order =  beerOrderManager.newBeerOrder(beerOrder);
            return beerOrderMapper.beerOrderToDto(order);

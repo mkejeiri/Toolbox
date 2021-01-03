@@ -43,10 +43,11 @@ public class BeerOrderStateChangedInterceptor extends StateMachineInterceptorAda
                             log.debug(state.getId().toString());
                             log.debug("#####################################");
                             order.setOrderStatus(state.getId());
-                            //hibernate save is write lazily to the DB, saveAndFlush force it to write to db right away!
+                            //hibernate save is write lazily to the DB,
+                            //saveAndFlush force it to write to db right away!
                             //TODO: need fixing!
-                            //beerOrderRepository.saveAndFlush(order);
-                            beerOrderRepository.save(order);
+                            beerOrderRepository.saveAndFlush(order);
+                            //beerOrderRepository.save(order);
                         }, () -> log.debug("not found beerOrderId : " + beerOrderId));
                     });
         });
