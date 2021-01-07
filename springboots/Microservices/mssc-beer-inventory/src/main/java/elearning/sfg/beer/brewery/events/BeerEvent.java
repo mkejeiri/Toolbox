@@ -7,12 +7,11 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
-@Data
 @AllArgsConstructor
-@Builder
 @NoArgsConstructor
+@Data
+@Builder
 public class BeerEvent implements Serializable {
-
     static final long serialVersionUID = 1956315996100526693L;
     private BeerDto beerDto;
 }

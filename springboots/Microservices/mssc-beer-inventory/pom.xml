@@ -38,6 +38,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
         <jaxb.version>2.3.0</jaxb.version>
+        <eureka-client-version>3.0.0</eureka-client-version>
     </properties>
 
     <dependencies>
@@ -96,9 +97,19 @@
             <version>${org.mapstruct.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+            <version>${eureka-client-version}</version>
+        </dependency>
+        <dependency>
             <!--get us the jms client-->
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-artemis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+            <version>${eureka-client-version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -141,24 +152,24 @@
                 <configuration>
                     <annotationProcessorPaths>
                         <path>
-                            <groupId>org.mapstruct</groupId>
-                            <artifactId>mapstruct-processor</artifactId>
-                            <version>${org.mapstruct.version}</version>
-                        </path>
-                        <path>
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                             <version>${lombok.version}</version>
                         </path>
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${org.mapstruct.version}</version>
+                        </path>
                     </annotationProcessorPaths>
-                    <compilerArgs>
+                   <!-- <compilerArgs>
                         <compilerArg>
                             -Amapstruct.defaultComponentModel=spring
                         </compilerArg>
-                        <!-- <compilerArg>
+                         <compilerArg>
                              -Amapstruct.verbose=true
-                         </compilerArg>-->
-                    </compilerArgs>
+                         </compilerArg>
+                    </compilerArgs>-->
                 </configuration>
             </plugin>
         </plugins>

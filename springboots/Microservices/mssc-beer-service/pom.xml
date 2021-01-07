@@ -22,6 +22,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
+        <eureka-client-version>3.0.0</eureka-client-version>
     </properties>
 
     <dependencies>
@@ -88,6 +89,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-artemis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+            <version>${eureka-client-version}</version>
         </dependency>
         <!--<dependency>
             <groupId>org.apache.activemq</groupId>

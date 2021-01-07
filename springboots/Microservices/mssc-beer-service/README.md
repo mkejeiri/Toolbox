@@ -212,3 +212,24 @@ public class MsscBeerServiceApplication {
 
 ```
 
+
+Enable Eureka client
+-----
+
+add maven dependency
+```
+<dependency>
+     <groupId>org.springframework.cloud</groupId>
+     <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>           
+</dependency>
+```
+
+
+add application name to be used to register with Eureka:
+```
+spring.application.name=beer-service
+```
+
+
+add a new config: 
+`LocalDiscoverConfig.java`

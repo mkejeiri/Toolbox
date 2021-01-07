@@ -39,6 +39,7 @@
         <org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
         <jaxb.version>2.3.0</jaxb.version>
         <state.machine.version>2.2.1.RELEASE</state.machine.version>
+        <eureka-client-version>3.0.0</eureka-client-version>
     </properties>
 
     <dependencies>
@@ -94,6 +95,11 @@
             <groupId>org.mapstruct</groupId>
             <artifactId>mapstruct</artifactId>
             <version>${org.mapstruct.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+            <version>${eureka-client-version}</version>
         </dependency>
         <dependency>
             <!--get us the jms client-->

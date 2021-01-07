@@ -4,7 +4,7 @@ import elearning.sfg.beer.brewery.dtos.BeerInventoryDto;
 import elearning.sfg.beer.inventory.domain.BeerInventory;
 import org.mapstruct.Mapper;
 
-@Mapper(uses = {DateMapper.class})
+@Mapper(componentModel = "spring", uses = {DateMapper.class})
 public interface BeerInventoryMapper {
 
     BeerInventory beerInventoryDtoToBeerInventory(BeerInventoryDto beerInventoryDTO);
