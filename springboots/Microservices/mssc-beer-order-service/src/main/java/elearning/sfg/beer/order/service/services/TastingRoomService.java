@@ -41,8 +41,7 @@ public class TastingRoomService {
     public void placeTastingRoomOrder() {
 
         List<Customer> customerList = customerRepository.findAllByCustomerNameLike(BeerOrderBootStrap.TASTING_ROOM);
-
-        if (customerList.size() == 1) { //should be just one
+        if (customerList.size() >= 1) { //should be just one
             doPlaceOrder(customerList.get(0));
         } else {
             log.error("Too many or too few tasting room customers found");

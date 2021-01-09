@@ -15,18 +15,22 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Profile("local-discovery")
 @Service
-public class BeerInventoryServiceFeign implements BeerInventoryService {
+public class BeerInventoryServiceFeignClientImpl implements BeerInventoryService {
     private final InventoryServiceFeignClient inventoryServiceFeignClient;
 
     @Override
     public Integer getOnhandInventory(UUID beerId) {
-        log.debug("Calling inventory Service - BeerId: " + beerId);
+        log.debug("Calling Inventory Service - BeerId: " + beerId);
+
         ResponseEntity<List<BeerInventoryDto>> responseEntity = inventoryServiceFeignClient.getOnhandQuantity(beerId);
 
         Integer onHand = Objects.requireNonNull(responseEntity.getBody())
                 .stream()
                 .mapToInt(BeerInventoryDto::getQuantityOnHand)
                 .sum();
+
+        log.debug("BeerId: " + beerId + " On hand is: " + onHand);
+
         return onHand;
     }
 }

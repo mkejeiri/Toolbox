@@ -3,7 +3,6 @@ package elearning.sfg.beer.msscbeerservice.services.inventory;
 import elearning.sfg.beer.brewery.dtos.BeerInventoryDto;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -16,9 +15,8 @@ some annotations and then at runtime Spring is going to provide an implementatio
 */
 
 //name of inventory service used by eureka (inventory service application name)
-//when it fails, it fallbacks on its BeerInventoryServiceFeignClientFailoverImpl implementation
-@FeignClient(name = "beer-inventory-service", fallback = BeerInventoryServiceFeignClientFailoverImpl.class)
-public interface InventoryServiceFeignClient {
-    @RequestMapping(method = RequestMethod.GET, value = BeerInventoryServiceRestTemplateImpl.INVENTORY_PATH)
-    ResponseEntity<List<BeerInventoryDto>> getOnhandQuantity(@PathVariable UUID beerId);
+@FeignClient(name = "inventory-failover")
+public interface InventoryFailoverFeignClient {
+    @RequestMapping(method = RequestMethod.GET, value = BeerInventoryServiceRestTemplateImpl.INVENTORY_FAILOVER_PATH)
+    ResponseEntity<List<BeerInventoryDto>> getOnhandQuantity();
 }
