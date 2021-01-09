@@ -22,17 +22,17 @@ public class BeerOrderAllocationResultListener {
     public void listen(AllocateOrderResult allocateOrderResult) {
         final UUID beerOrderId = allocateOrderResult.getBeerOrderDto().getId();
 
-        if (!allocateOrderResult.getIsAllocationError() && !allocateOrderResult.getIsPendingInventory()){
+        if (!allocateOrderResult.getIsAllocationError() && !allocateOrderResult.getIsPendingInventory()) {
             //Allocated normally
             beerOrderManager.beerOrderAllocationApproved(allocateOrderResult.getBeerOrderDto());
             log.debug("Allocated OrderId: " + beerOrderId);
 
-        } else if (!allocateOrderResult.getIsAllocationError() && allocateOrderResult.getIsPendingInventory()){
+        } else if (!allocateOrderResult.getIsAllocationError() && allocateOrderResult.getIsPendingInventory()) {
             //pending inventory
             beerOrderManager.beerOrderAllocationPendingInventory(allocateOrderResult.getBeerOrderDto());
             log.debug("pending inventory for OrderId: " + beerOrderId);
 
-        } else if (allocateOrderResult.getIsAllocationError()){
+        } else if (allocateOrderResult.getIsAllocationError()) {
             //allocation error
             beerOrderManager.beerOrderAllocationFailed(allocateOrderResult.getBeerOrderDto());
             log.debug("allocation failed for OrderId: " + beerOrderId);

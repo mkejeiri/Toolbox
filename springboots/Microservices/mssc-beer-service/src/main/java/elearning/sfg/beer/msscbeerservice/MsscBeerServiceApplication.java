@@ -7,7 +7,8 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 //@SpringBootApplication(exclude =ArtemisAutoConfiguration.class)
 
 @EnableFeignClients
-@SpringBootApplication(scanBasePackages = {"elearning.sfg.beer"})
+//@SpringBootApplication(scanBasePackages = {"elearning.sfg.beer"})
+@SpringBootApplication()
 public class MsscBeerServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(MsscBeerServiceApplication.class, args);

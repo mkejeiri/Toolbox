@@ -23,7 +23,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
         <eureka-client-version>3.0.0</eureka-client-version>
-        <openfeign.version>2.2.2.RELEASE</openfeign.version>
+        <openfeign.version>3.0.0</openfeign.version>
     </properties>
 
     <dependencies>
