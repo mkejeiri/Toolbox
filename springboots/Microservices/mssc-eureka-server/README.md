@@ -22,3 +22,7 @@ Spring is recommending to log those levels off if we ever need to get into debug
 logging.level.com.netflix.eureka=off
 logging.level.com.netflix.discovery=off
 ```
+
+
+Once up and running check out all the discovered servers : 
+`http://localhost:8761/`

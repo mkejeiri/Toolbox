@@ -130,3 +130,48 @@ public class RouterConfig {
 
 }
 ```
+
+api gateway adjustement
+-----------
+
+add  `spring-cloud-starter-circuitbreaker-reactor-resilience4j` to the api gateway, **we need to use the reactive version since the failover service use reactive spring (webflux)**
+
+```xml 
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-circuitbreaker-reactor-resilience4j</artifactId>
+</dependency>
+```
+
+adjust the route in api gateway service:
+
+```java
+    @Bean
+    public RouteLocator loadBalancedHostRoutes(RouteLocatorBuilder builder) {
+//https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/util/AntPathMatcher.html
+        return builder.routes()
+                .route(r ->    r.path("/api/v1/beer*", "/api/v1/beer/*", "/api/v1/beerUpc/*")
+                                .uri("lb://beer-service")
+                        /*.id("beer-service")*/)
+
+                .route(r ->    r.path("/api/v1/customers/**")
+                                .uri("lb://beer-order-service")
+                        /*.id("order-service")*/)
+
+                .route(r ->    r.path("/api/v1/beer/*/inventory")
+                                .filters(f -> f.circuitBreaker(c ->
+                                               c.setName("inventoryCB")
+                                                .setFallbackUri("forward:/inventory-failover")
+                                                .setRouteId("inv-failover")))
+                                .uri("lb://beer-inventory-service")
+                )
+
+                .route(r ->    r.path("inventory-failover/*","/inventory-failover/*") //everything
+                                .uri("lb://inventory-failover")
+                        /*.id("inventory-failover")*/)
+
+                .build();
+    }
+```
+
+
