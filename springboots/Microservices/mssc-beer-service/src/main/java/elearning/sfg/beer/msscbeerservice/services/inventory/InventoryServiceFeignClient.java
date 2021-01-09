@@ -20,5 +20,5 @@ some annotations and then at runtime Spring is going to provide an implementatio
 @FeignClient(name = "beer-inventory-service", fallback = BeerInventoryServiceFeignClientFailoverImpl.class)
 public interface InventoryServiceFeignClient {
     @RequestMapping(method = RequestMethod.GET, value = BeerInventoryServiceRestTemplateImpl.INVENTORY_PATH)
-    ResponseEntity<List<BeerInventoryDto>> getOnhandQuantity(@PathVariable UUID beerId);
+    ResponseEntity<List<BeerInventoryDto>> getOnhandInventory(@PathVariable UUID beerId);
 }

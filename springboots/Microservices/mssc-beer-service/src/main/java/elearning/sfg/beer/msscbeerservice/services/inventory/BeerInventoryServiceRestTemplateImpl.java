@@ -22,7 +22,7 @@ import java.util.UUID;
 public class BeerInventoryServiceRestTemplateImpl implements BeerInventoryService {
 
     public static final String INVENTORY_PATH = "/api/v1/beer/{beerId}/inventory";
-    public static final String INVENTORY_FAILOVER_PATH = "/inventory-failover";
+
     private final RestTemplate restTemplate;
 
     //beer-inventory-service-host

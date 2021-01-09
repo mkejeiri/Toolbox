@@ -16,7 +16,7 @@ some annotations and then at runtime Spring is going to provide an implementatio
 
 //name of inventory service used by eureka (inventory service application name)
 @FeignClient(name = "inventory-failover")
-public interface InventoryFailoverFeignClient {
-    @RequestMapping(method = RequestMethod.GET, value = BeerInventoryServiceRestTemplateImpl.INVENTORY_FAILOVER_PATH)
-    ResponseEntity<List<BeerInventoryDto>> getOnhandQuantity();
+public interface InventoryFailoverFeignClient  {
+    @RequestMapping(method = RequestMethod.GET, value = "/inventory-failover")
+    ResponseEntity<List<BeerInventoryDto>> getOnhandInventory();
 }

@@ -337,5 +337,62 @@ We need to add client dependency to the gateway project (see gateway project).
 ``` 
 
 
+Failover Settings 
+--------
 
+Beer service call sync (rest call) to the inventory service. We need to use the failover mechanism for resiliency.
+
+Add file `application-local-discovery.properties`
+```
+# hystrix under OpenFeign is no longuer supported!
+feign.hystrix.enabled=true 
+#feign.circuitbreaker.enabled=true
+```
+
+create an  **InventoryFailoverFeignClient**  interface that will call `inventory-failover` service through the `FeignClient`.
+
+```java
+/*
+the feign client works like Spring Data JPA, We are going to provide an interface and decorate the interface with
+some annotations and then at runtime Spring is going to provide an implementation for us.
+*/
+
+//name of inventory service used by eureka (inventory service application name)
+@FeignClient(name = "inventory-failover")
+public interface InventoryFailoverFeignClient  {
+    @RequestMapping(method = RequestMethod.GET, value = "/inventory-failover")
+    ResponseEntity<List<BeerInventoryDto>> getOnhandInventory();
+}
+```
+
+Adjust the openfeign client  (i.e. `InventoryServiceFeignClient` **interface**) to include the fallback. 
+
+```java
+/*
+the feign client works like Spring Data JPA, We are going to provide an interface and decorate the interface with
+some annotations and then at runtime Spring is going to provide an implementation for us.
+*/
+
+//name of inventory service used by eureka (inventory service application name)
+//when it fails, it fallbacks on its BeerInventoryServiceFeignClientFailoverImpl implementation
+@FeignClient(name = "beer-inventory-service", fallback = BeerInventoryServiceFeignClientFailoverImpl.class)
+public interface InventoryServiceFeignClient {
+    @RequestMapping(method = RequestMethod.GET, value = BeerInventoryServiceRestTemplateImpl.INVENTORY_PATH)
+    ResponseEntity<List<BeerInventoryDto>> getOnhandInventory(@PathVariable UUID beerId);
+}
+```
+
+make sure that FeignClients is Enabled on the startup.
+
+```java
+@EnableFeignClients
+//@SpringBootApplication(scanBasePackages = {"elearning.sfg.beer"})
+@SpringBootApplication()
+public class MsscBeerServiceApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(MsscBeerServiceApplication.class, args);
+    }
+}
+
+```
 
