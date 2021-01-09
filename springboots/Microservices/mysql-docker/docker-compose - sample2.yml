@@ -4,8 +4,8 @@ services:
   db:
     image: mysql:latest
     volumes:
-        - "C:/docker-spring/db:/var/lib/mysql"
+      - "C:/docker-spring/db:/var/lib/mysql"
     environment:
-        MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
     ports:
-        - 3306:3306
+      - 3306:3306

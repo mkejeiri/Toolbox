@@ -28,7 +28,7 @@ public class HandleOrderAllocationFailedAction implements Action<BeerOrderStatus
         OrderAllocationFailed orderAllocationFailed = OrderAllocationFailed.builder()
                 .orderId(beerOrderId)
                 .build();
-            jmsTemplate.convertAndSend(JmsConfig.ALLOCATE_FAILURE_QUEUE, orderAllocationFailed);
-            log.debug("Sent to ALLOCATE_FAILURE_QUEUE, beerOrderId: " + beerOrderId);
+        jmsTemplate.convertAndSend(JmsConfig.ALLOCATE_FAILURE_QUEUE, orderAllocationFailed);
+        log.debug("Sent to ALLOCATE_FAILURE_QUEUE, beerOrderId: " + beerOrderId);
     }
 }

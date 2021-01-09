@@ -26,16 +26,16 @@ public class JmsConfig {
     public static final String ALLOCATE_ORDER_QUEUE = "ALLOCATE_ORDER_QUEUE";
     public static final String ALLOCATE_ORDER_RESPONSE_QUEUE = "ALLOCATE_ORDER_RESPONSE_QUEUE";
     public static final String ALLOCATE_FAILURE_QUEUE = "ALLOCATE_FAILURE_QUEUE";
-    public static final String DEALLOCATE_ORDER_QUEUE = "DEALLOCATE_ORDER_QUEUE" ;
+    public static final String DEALLOCATE_ORDER_QUEUE = "DEALLOCATE_ORDER_QUEUE";
     public static final String BREWING_REQUEST_QUEUE = "BREWING_REQUEST_QUEUE";
     public static final String NEW_INVENTORY_QUEUE = "NEW_INVENTORY_QUEUE";
 
     @Bean
-    public MessageConverter  jacksonJmsMessageConverter(
+    public MessageConverter jacksonJmsMessageConverter(
             ObjectMapper objectMapper //Spring managed object mapper injection (used by web endpoint).
             //OffSetTime mapping not working properly => reconfigure Jackson JMS message converter
             //to use the Spring Boot managed Jackson object mapper.
-    ){
+    ) {
         //Message converter that uses Jackson 2.x to convert messages to and from JSON. Maps an
         // object to a BytesMessage, or to a TextMessage if the targetType is set to MessageType.TEXT.
         // Converts from a TextMessage or BytesMessage to an object.

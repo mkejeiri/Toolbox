@@ -28,9 +28,8 @@ public class BeerOrderServiceImpl implements BeerOrderService {
     private final BeerOrderRepository beerOrderRepository;
     private final CustomerRepository customerRepository;
     private final BeerOrderMapper beerOrderMapper;
-//    private final ApplicationEventPublisher publisher;
+    //    private final ApplicationEventPublisher publisher;
     private final BeerOrderManager beerOrderManager;
-
 
 
     @Override
@@ -72,8 +71,8 @@ public class BeerOrderServiceImpl implements BeerOrderService {
 
             // publisher.publishEvent(new NewBeerOrderEvent(savedBeerOrder));
 
-            BeerOrder order =  beerOrderManager.newBeerOrder(beerOrder);
-           return beerOrderMapper.beerOrderToDto(order);
+            BeerOrder order = beerOrderManager.newBeerOrder(beerOrder);
+            return beerOrderMapper.beerOrderToDto(order);
         }
         //todo add exception type
         throw new RuntimeException("Customer Not Found");

@@ -17,6 +17,7 @@
     <properties>
         <java.version>11</java.version>
         <spring-cloud.version>2020.0.0</spring-cloud.version>
+        <eureka-client-version>3.0.0</eureka-client-version>
     </properties>
 
     <dependencies>
@@ -30,7 +31,13 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+            <version>${eureka-client-version}</version>
+        </dependency>
     </dependencies>
+
 
     <dependencyManagement>
         <dependencies>

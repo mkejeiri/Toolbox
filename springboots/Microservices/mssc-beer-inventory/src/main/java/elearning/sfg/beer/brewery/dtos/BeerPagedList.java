@@ -12,7 +12,7 @@ import org.springframework.data.domain.Pageable;
 import java.io.Serializable;
 import java.util.List;
 
-public class BeerPagedList extends PageImpl<BeerDto>  implements Serializable{
+public class BeerPagedList extends PageImpl<BeerDto> implements Serializable {
     static final long serialVersionUID = 6426785561668789710L;
 
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)

@@ -15,7 +15,7 @@ public class DeallocationListener {
     private final AllocationService allocationService;
 
     @JmsListener(destination = JmsConfig.DEALLOCATE_ORDER_QUEUE)
-    public void listen(DeallocateOrderRequested event){
+    public void listen(DeallocateOrderRequested event) {
         allocationService.deallocateOrder(event.getBeerOrderDto());
     }
 }

@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.5.RELEASE</version>
+        <version>2.3.0.RELEASE</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>elearning.springframework</groupId>
@@ -162,15 +162,29 @@
                             <version>${org.mapstruct.version}</version>
                         </path>
                     </annotationProcessorPaths>
-                   <!-- <compilerArgs>
-                        <compilerArg>
-                            -Amapstruct.defaultComponentModel=spring
-                        </compilerArg>
+                    <!-- <compilerArgs>
                          <compilerArg>
-                             -Amapstruct.verbose=true
+                             -Amapstruct.defaultComponentModel=spring
                          </compilerArg>
-                    </compilerArgs>-->
+                          <compilerArg>
+                              -Amapstruct.verbose=true
+                          </compilerArg>
+                     </compilerArgs>-->
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <!--<version>3.1.0</version>-->
+                <executions>
+                    <execution>
+                        <id>my-auto-clean</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

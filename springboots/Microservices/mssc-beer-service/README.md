@@ -1,7 +1,10 @@
 # MSSC Beer Service
 
 ## mapstruct
-1-  @DecoratedWith(BeerMapperDecorator.class): the @DecoratedWith will generate the code below through the preprocessor, note that the implementation is as @Primary:
+
+1- @DecoratedWith(BeerMapperDecorator.class): the @DecoratedWith will generate the code below through the preprocessor,
+note that the implementation is as @Primary:
+
 ```Java
 @Component
 @Primary
@@ -9,9 +12,9 @@ public class BeerMapperImpl extends BeerMapperDecorator implements BeerMapper {
 }
 ```
 
-2- MapStruct (@Mapper annotation) creates automatically through the preprocessor an implementation
-BeerMapperImpl by matching the property names, along with @DecoratedWith will create a "BeerMapperImpl_" with @Qualifier("delegate") as follow:
-
+2- MapStruct (@Mapper annotation) creates automatically through the preprocessor an implementation BeerMapperImpl by
+matching the property names, along with @DecoratedWith will create a "BeerMapperImpl_" with @Qualifier("delegate") as
+follow:
 
 ```Java
 import Beer;
@@ -110,9 +113,10 @@ public class BeerMapperImpl_ implements BeerMapper {
 }
 ```
 
-
 ## ehcache
+
 1- Add ehcache curated dependencies :
+
 ```xml
         <dependency>
             <groupId>javax.cache</groupId>
@@ -125,6 +129,7 @@ public class BeerMapperImpl_ implements BeerMapper {
 ```
 
 2- create ehcache.xml in resources, with following content :
+
 ```xml
 <config
         xmlns:jsr107='http://www.ehcache.org/v3/jsr107'
@@ -155,7 +160,6 @@ public class BeerMapperImpl_ implements BeerMapper {
 spring.cache.jcache.config=classpath:ehcache.xml
 ```
 
-
 4- Added annotation to two methods in BeerServiceImpl as follow:
 
 ```Java
@@ -183,7 +187,8 @@ spring.cache.jcache.config=classpath:ehcache.xml
     }
 ```
 
-5-  Enable Caching either create a dedicated `CacheConfig` `class` : 
+5- Enable Caching either create a dedicated `CacheConfig` `class` :
+
 ```Java
   
 import org.springframework.cache.annotation.EnableCaching;
@@ -194,6 +199,7 @@ import org.springframework.context.annotation.Configuration;
 public class CacheConfig {
 }
 ```
+
 **OR** add `@EnableCaching` to `MsscBeerServiceApplication` `class`
 
 ```Java
@@ -212,11 +218,11 @@ public class MsscBeerServiceApplication {
 
 ```
 
-
-Enable Eureka client
+Eureka Client Configuration
 -----
 
 add maven dependency
+
 ```
 <dependency>
      <groupId>org.springframework.cloud</groupId>
@@ -224,12 +230,112 @@ add maven dependency
 </dependency>
 ```
 
-
 add application name to be used to register with Eureka:
+
 ```
 spring.application.name=beer-service
 ```
 
+add a new config:
 
-add a new config: 
-`LocalDiscoverConfig.java`
+```java
+@Profile("local-discovery")
+@EnableEurekaClient
+@Configuration
+public class LocalDiscoveryConfig {
+}
+```
+
+Service discovery using OpenFeign
+-------
+
+Add dependency
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-openfeign</artifactId>
+    <version>2.2.2.RELEASE</version>
+</dependency>
+```
+
+We need to enable **EnableFeignClients**:
+
+```java
+@EnableFeignClients
+@SpringBootApplication(scanBasePackages = {"elearning.sfg.beer"})
+public class MsscBeerServiceApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(MsscBeerServiceApplication.class, args);
+    }
+}
+```
+
+**Configure** the service; and instead of restTempate making a call to inventory service, it should use FeignClient, the
+feign client works like Spring Data JPA, We are going to provide an interface and decorate the interface with some
+annotations and then at runtime Spring is going to provide an implementation for us.
+
+```java
+@FeignClient(name="beer-inventory-service")
+public interface InventoryServiceFeignClient {
+    @RequestMapping(method = RequestMethod.GET,value = BeerInventoryServiceRestTemplateImpl.INVENTORY_PATH)
+    ResponseEntity<BeerInventoryDto> getOnhandQuantity(UUID beerId);
+```
+
+Create and implements **BeerInventoryServiceFeign** :
+
+```java
+@Slf4j
+@RequiredArgsConstructor
+@Profile("local-discovery")
+public class BeerInventoryServiceFeign implements BeerInventoryService{
+    private final InventoryServiceFeignClient inventoryServiceFeignClient;
+    @Override
+    public Integer getOnhandInventory(UUID beerId) {
+        log.debug("Calling inventory Service - BeerId: "+ beerId);
+        ResponseEntity<List<BeerInventoryDto>> responseEntity = inventoryServiceFeignClient.getOnhandQuantity(beerId);
+
+        Integer onHand = Objects.requireNonNull(responseEntity.getBody())
+                .stream()
+                .mapToInt(BeerInventoryDto::getQuantityOnHand)
+                .sum();
+        return onHand;
+    }
+}
+```
+
+since **BeerInventoryServiceFeign** and **BeerInventoryServiceRestTemplateImpl** both implements **
+BeerInventoryService** interface, we need to make a distinct otherwise spring boot doesn't know which one to
+wire/inject. The trick here is consider the **profile** of
+BeerInventoryServiceRestTemplateImpl (`@Profile("!local-discovery")`) the **reverse** of BeerInventoryServiceFeign;
+
+```java
+@Slf4j
+@Profile("!local-discovery")
+@ConfigurationProperties(prefix = "sfg.brewery", ignoreUnknownFields = true)
+@Configuration
+public class BeerInventoryServiceRestTemplateImpl implements BeerInventoryService {
+  public static final String INVENTORY_PATH = "/api/v1/beer/{beerId}/inventory";
+  private final RestTemplate restTemplate;
+...
+}
+
+```
+
+Configure Gateway for Service Discovery
+-----
+We configure the gateway to use Eureka; to do service lookups to find the services and the gateway:
+
+We need to add client dependency to the gateway project (see gateway project).
+
+```xml
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+	<version>${eureka-client-version}</version>
+</dependency>
+``` 
+
+
+
+

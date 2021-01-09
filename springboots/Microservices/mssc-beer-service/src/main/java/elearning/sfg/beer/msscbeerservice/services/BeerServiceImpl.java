@@ -56,8 +56,7 @@ public class BeerServiceImpl implements BeerService {
                     beerPage.getTotalElements());
 
             return beerPagedList;
-        } else
-        {
+        } else {
             beerPagedList = new BeerPagedList(beerPage
                     .getContent()
                     .stream()

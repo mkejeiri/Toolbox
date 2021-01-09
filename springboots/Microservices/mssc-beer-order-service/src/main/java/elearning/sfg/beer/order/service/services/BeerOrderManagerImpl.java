@@ -186,7 +186,6 @@ public class BeerOrderManagerImpl implements BeerOrderManager {
     }
 
 
-
     //send standard Spring message instead of the Beer enum event
     private void sendBeerOrderEvent(BeerOrder beerOrder, BeerOrderEventEnum event) {
 

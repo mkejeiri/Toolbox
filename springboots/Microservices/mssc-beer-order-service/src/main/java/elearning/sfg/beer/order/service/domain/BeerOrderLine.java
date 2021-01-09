@@ -29,6 +29,7 @@ public class BeerOrderLine extends BaseEntity {
      * for Quoting, Ordering, and Picking.
      * */
     private Integer quantityAllocated = 0;
+
     @Builder
     public BeerOrderLine(UUID id, Long version, Timestamp createdDate, Timestamp lastModifiedDate,
                          BeerOrder beerOrder, UUID beerId, String upc, Integer orderQuantity,

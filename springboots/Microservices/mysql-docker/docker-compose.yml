@@ -4,9 +4,9 @@ services:
   db:
     image: mysql:latest
     volumes:
-        - "./db:/var/lib/mysql"
-        - "./mysql-init.sql:/docker-entrypoint-initdb.d/setup.sql"
+      - "./db:/var/lib/mysql"
+      - "./mysql-init.sql:/docker-entrypoint-initdb.d/setup.sql"
     environment:
-        MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
     ports:
-        - 3306:3306
+      - 3306:3306

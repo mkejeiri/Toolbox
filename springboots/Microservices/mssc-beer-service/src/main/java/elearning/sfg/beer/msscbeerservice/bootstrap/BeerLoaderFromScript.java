@@ -19,7 +19,7 @@ public class BeerLoaderFromScript {
 
     @EventListener(ApplicationReadyEvent.class)
     public void run() {
-        if(beerRepository.count() == 0) loadData();
+        if (beerRepository.count() == 0) loadData();
     }
 
     private void loadData() {

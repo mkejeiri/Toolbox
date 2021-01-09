@@ -104,7 +104,7 @@ class BeerOrderManagerImplIT {
         System.out.println("Awakening mode");*/
 
         await().untilAsserted(() -> {
-        BeerOrder order = beerOrderRepository.findById(beerId).get();
+            BeerOrder order = beerOrderRepository.findById(beerId).get();
             assertEquals(BeerOrderStatusEnum.ALLOCATED, order.getOrderStatus());
         });
 
@@ -195,7 +195,6 @@ class BeerOrderManagerImplIT {
 
         assertEquals(BeerOrderStatusEnum.PICKED_UP, pickedUpOrder.getOrderStatus());
     }
-
 
 
     public BeerOrder createBeerOrder() {

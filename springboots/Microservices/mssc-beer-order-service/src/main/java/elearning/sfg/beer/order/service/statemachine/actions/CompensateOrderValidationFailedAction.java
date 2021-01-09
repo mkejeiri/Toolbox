@@ -19,7 +19,7 @@ public class CompensateOrderValidationFailedAction implements Action<BeerOrderSt
                 .getHeaders().get(BeerOrderStateMachineConfig.BEER_ORDER_ID_HEADER);
 
         //Stub: add business logic here for compensation
-        log.debug("Validation failed for beerOrderId: " + beerOrderId+ ".... Compensating transaction");
+        log.debug("Validation failed for beerOrderId: " + beerOrderId + ".... Compensating transaction");
 
     }
 }

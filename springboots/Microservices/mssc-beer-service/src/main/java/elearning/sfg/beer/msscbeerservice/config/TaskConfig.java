@@ -19,7 +19,7 @@ public class TaskConfig {
     //which instructs Spring to expect a TaskExecutor class for scheduled tasks,
     //this will set up a schedule task that enables us to send out a message at a periodic basis.
     @Bean
-    TaskExecutor taskExecutor(){
+    TaskExecutor taskExecutor() {
         return new SimpleAsyncTaskExecutor();
     }
 }

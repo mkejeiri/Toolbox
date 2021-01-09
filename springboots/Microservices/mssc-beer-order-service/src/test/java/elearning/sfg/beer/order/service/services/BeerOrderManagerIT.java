@@ -66,7 +66,7 @@ public class BeerOrderManagerIT {
     @TestConfiguration
     static class RestTemplateBuilderProvider {
         @Bean(destroyMethod = "stop")
-        public WireMockServer wireMockServer(){
+        public WireMockServer wireMockServer() {
             WireMockServer server = with(wireMockConfig().port(8083));
             server.start();
             return server;
@@ -283,7 +283,7 @@ public class BeerOrderManagerIT {
     }
 
 
-    public BeerOrder createBeerOrder(){
+    public BeerOrder createBeerOrder() {
         BeerOrder beerOrder = BeerOrder.builder()
                 .customer(testCustomer)
                 .build();

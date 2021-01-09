@@ -29,6 +29,7 @@ public class BeerOrder extends BaseEntity {
     private Set<BeerOrderLine> beerOrderLines;
     private BeerOrderStatusEnum orderStatus = BeerOrderStatusEnum.NEW;
     private String orderStatusCallbackUrl;
+
     @Builder
     public BeerOrder(UUID id, Long version, Timestamp createdDate, Timestamp lastModifiedDate, String customerRef, Customer customer,
                      Set<BeerOrderLine> beerOrderLines, BeerOrderStatusEnum orderStatus,
