@@ -167,25 +167,3 @@ spring.security.user.name=legitimate
 spring.security.user.password=ramsis
 ```
 
-Add basic auth to the restTemplate
---------
-1- Add the credentials to the properties file (not recommended and it will do for dev)
-
-```properties
-#credentials for restTemplate to authenticate in Inventory Service
-sfg.brewery.inventory-user=legitimate
-sfg.brewery.inventory-password=ramsis
-```
-
-2- adjust the restTemplate to add authentication when building it
-
-```java
-public BeerInventoryServiceRestTemplateImpl(RestTemplateBuilder restTemplateBuilder,
-        @Value("${sfg.brewery.inventory-user}") String inventoryServiceUser,
-        @Value("${sfg.brewery.inventory-password}") String inventoryServicePassword) {
-    this.restTemplate = restTemplateBuilder
-                .basicAuthentication(inventoryServiceUser, inventoryServicePassword)
-                .build();
-    }
-```
-

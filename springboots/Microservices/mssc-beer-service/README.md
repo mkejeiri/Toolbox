@@ -545,3 +545,120 @@ We need to set a **custom config** in an xml file `logback-spring.xml` for the l
     </root>
 </configuration>
 ```
+
+
+
+Adding basic auth to the microservice (e.g inventory)
+--------
+1- add spring security dependency
+
+```xml
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+```
+
+2- add a config 
+
+```java
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+
+@Configuration
+public class SecurityFilterConfig extends WebSecurityConfigurerAdapter {
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable()
+                .authorizeRequests()
+                .anyRequest().authenticated()
+                .and()
+                .httpBasic();
+    }
+}
+
+```
+
+3- add credentials in property file (not recommended, this a show case)
+
+```properties
+#credentials to log in to microservice RestApi
+spring.security.user.name=legitimate
+spring.security.user.password=ramsis
+```
+
+
+Add basic auth to the restTemplate
+--------
+1- Add the credentials to the properties file (not recommended and it will do for dev)
+
+```properties
+#credentials for restTemplate to authenticate in Inventory Service
+sfg.brewery.inventory-user=legitimate
+sfg.brewery.inventory-password=ramsis
+```
+
+2- adjust the restTemplate to add authentication when building it
+
+```java
+public BeerInventoryServiceRestTemplateImpl(RestTemplateBuilder restTemplateBuilder,
+        @Value("${sfg.brewery.inventory-user}") String inventoryServiceUser,
+        @Value("${sfg.brewery.inventory-password}") String inventoryServicePassword) {
+    this.restTemplate = restTemplateBuilder
+                .basicAuthentication(inventoryServiceUser, inventoryServicePassword)
+                .build();
+    }
+```
+
+
+Adding basic auth for FeignClient
+--------
+
+1 - Create a config class that will allows to inject an interceptor bean
+
+```java
+import feign.auth.BasicAuthRequestInterceptor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class FeignClientBasicAuthInterceptorConfig {
+
+    @Bean
+    public BasicAuthRequestInterceptor basicAuthRequestInterceptor(@Value("${sfg.brewery.inventory-user}") String inventoryUser,
+                                                                   @Value("${sfg.brewery.inventory-password}")String inventoryPassword){
+        return new BasicAuthRequestInterceptor(inventoryUser, inventoryPassword);
+    }
+}
+
+```
+
+2- make the annotated `InventoryServiceFeignClient` interface aware to use the `configuration` of type `FeignClientBasicAuthInterceptorConfig.class`.
+
+```java
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.List;
+import java.util.UUID;
+
+/*
+the feign client works like Spring Data JPA, We are going to provide an interface and decorate the interface with
+some annotations and then at runtime Spring is going to provide an implementation for us.
+*/
+
+//name of inventory service used by eureka (inventory service application name)
+//when it fails, it fallbacks on its BeerInventoryServiceFeignClientFailoverImpl implementation
+@FeignClient(name = "beer-inventory-service", fallback = BeerInventoryServiceFeignClientFailoverImpl.class,
+        configuration = FeignClientBasicAuthInterceptorConfig.class)
+public interface InventoryServiceFeignClient {
+    @RequestMapping(method = RequestMethod.GET, value = BeerInventoryServiceRestTemplateImpl.INVENTORY_PATH)
+    ResponseEntity<List<BeerInventoryDto>> getOnhandInventory(@PathVariable UUID beerId);
+}
+```
