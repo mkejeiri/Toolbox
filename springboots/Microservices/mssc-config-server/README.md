@@ -124,3 +124,68 @@ add Spring Security to `mssc-config-server`
 spring.security.user.name=MyUserName
 spring.security.user.password=MySecretPasswor
 ```
+
+
+Adding basic auth to the microservice
+--------
+1- add spring security dependency
+
+```xml
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+```
+
+2- add a config 
+
+```java
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+
+@Configuration
+public class SecurityFilterConfig extends WebSecurityConfigurerAdapter {
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable()
+                .authorizeRequests()
+                .anyRequest().authenticated()
+                .and()
+                .httpBasic();
+    }
+}
+
+```
+
+3- add credentials in property file (not recommended, this a show case)
+
+```properties
+#credentials to log in to microservice RestApi
+spring.security.user.name=legitimate
+spring.security.user.password=ramsis
+```
+
+Add basic auth to the restTemplate
+--------
+1- Add the credentials to the properties file (not recommended and it will do for dev)
+
+```properties
+#credentials for restTemplate to authenticate in Inventory Service
+sfg.brewery.inventory-user=legitimate
+sfg.brewery.inventory-password=ramsis
+```
+
+2- adjust the restTemplate to add authentication when building it
+
+```java
+public BeerInventoryServiceRestTemplateImpl(RestTemplateBuilder restTemplateBuilder,
+        @Value("${sfg.brewery.inventory-user}") String inventoryServiceUser,
+        @Value("${sfg.brewery.inventory-password}") String inventoryServicePassword) {
+    this.restTemplate = restTemplateBuilder
+                .basicAuthentication(inventoryServiceUser, inventoryServicePassword)
+                .build();
+    }
+```
+
