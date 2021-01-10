@@ -105,3 +105,22 @@ encrypt.key=MySuperSecretKey
 3- to decrypt **Issue a post request** to `http://localhost:8888/decrypt`  with the password
 
 
+
+add Spring Security to `mssc-config-server`
+----
+
+1- Add spring boot starter security dependency
+
+```xml
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+```
+
+2- add the following credentials to `application.properties`
+
+```properties
+spring.security.user.name=MyUserName
+spring.security.user.password=MySecretPasswor
+```
