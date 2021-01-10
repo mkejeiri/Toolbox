@@ -60,3 +60,18 @@ logging.level.org.springframework.cloud=debug
 logging.level.org.springframework.web=debug
 ```
 
+
+To test the application : `http://localhost:8888/foo/default`
+if there's no profile logically we would think that doing `/application` and we get the config properties. In reality when there is not an active profile, default profile is effectively active. So going just `/application`, get us `not found`. But if we do `/application/default` then we will get the config properties.
+also `http://localhost:8888/anyapp/anyprofile` would work for **default global settings**.
+
+
+Configuration of server config
+-------
+1- Create a config repo empty(e.g. https://github.com/mkejeiri/mssc-config-repo.git)
+2- Create a folder that bears the same `spring.application.name` of the µservice (e.g. beer-service within https://github.com/mkejeiri/mssc-config-repo.git).
+3- copy the properties file (e.g. `application-mysql.properties`) and rename it according to the profile.
+4- update the search path with the name of the folder (e.g. `beer-service`) : e.g. `spring.cloud.config.server.git.search-paths={application}` 
+5- issue a get request to `http://localhost:8888/beer-service/local`
+	- `http://localhost:8888/beer-service/default` get only config from the root folder.
+
