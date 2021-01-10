@@ -41,6 +41,7 @@
         <jaxb.version>2.3.0</jaxb.version>
         <eureka-client-version>3.0.0</eureka-client-version>
         <openfeign.version>3.0.0</openfeign.version>
+        <cloud-starter-config-version>2.2.3.RELEASE</cloud-starter-config-version>
     </properties>
 
     <dependencies>
@@ -112,6 +113,12 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
             <version>${openfeign.version}</version>
+        </dependency>
+        <!--setting up cloud config client-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+            <version>${cloud-starter-config-version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

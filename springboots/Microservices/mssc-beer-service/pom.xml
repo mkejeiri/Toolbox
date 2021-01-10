@@ -24,6 +24,8 @@
         <org.mapstruct.version>1.4.1.Final</org.mapstruct.version>
         <eureka-client-version>3.0.0</eureka-client-version>
         <openfeign.version>3.0.0</openfeign.version>
+        <cloud-starter-config-version>2.2.3.RELEASE</cloud-starter-config-version>
+        <zipkin-version>2.2.2.RELEASE</zipkin-version>
     </properties>
 
     <dependencies>
@@ -38,6 +40,12 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <!--setting up cloud config client-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+         <version>${cloud-starter-config-version}</version>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
@@ -101,6 +109,17 @@
             <artifactId>spring-cloud-starter-openfeign</artifactId>
             <version>${openfeign.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-zipkin</artifactId>
+            <version>${zipkin-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>6.3</version>
+        </dependency>
+
         <!--<dependency>
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-jms-pool</artifactId>

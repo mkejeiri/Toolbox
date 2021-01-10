@@ -396,3 +396,152 @@ public class MsscBeerServiceApplication {
 
 ```
 
+Setting up cloud config client
+-----
+The `beer-service`  will fetch the config from spring cloud config server `mssc-config-server` service which in turn fetch the config from github `https://github.com/mkejeiri/mssc-config-repo.git`
+ 
+**add the cloud config client dependency**
+ 
+```xml
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-config</artifactId>
+	<version>2.2.3.RELEASE</version>
+</dependency>
+```
+
+
+**Two phases configuration step**: 
+- It will start up, i.e. it will load bootstrap.properties file to find the environment. 
+- and then it's will continue its normal course.
+
+**we can bootstrap application and also profiles**. This is very important, because it allows us to bootstrap locally any profile (such as eureka or no).
+
+
+**Create** `bootstrap-local-discovery.properties` **file** add the following:  
+
+```properties
+#we didn't config any Eureka properties, Spring default to localhost.
+#enable cloud discovery
+spring.cloud.discovery.enabled=true
+
+#discover the config server mssc-config-server
+spring.cloud.config.discovery.service-id=mssc-config-server
+
+```
+
+**update active profiles** (i.e. edit configuration): e.g. `local,local-discovery`.
+
+**Imporant** : we need to disable discovery if we want to work with local settings (e.g. `application-mysql.properties`), so we need to add `spring.cloud.discovery.enabled=false` to `application-mysql.properties`
+
+
+Adding Zipkin and logstash
+-----------
+A few words on zipkin :
+- Zipkin is an open source project used to report distributed tracing metrics
+	- Information can be reported to Zipkin via webservices via HTTP
+	- Optionally metrics can be provided via Kafka or Rabbit
+- Zipkin is a Spring MVC project
+	- Recommended to use binary distribution or Docker image
+	- Building your own is not supported
+- Uses in memory database for development
+- Cassandra or Elasticsearch should be used for production
+
+`docker run -d -p 9411:9411 openzipkin/zipkin`
+
+**Spring Cloud Sleuth**
+- org.springframework.cloud:spring-cloud-starter-sleuth: Starter for logging only.
+- org.springframework.cloud:spring-cloud-starter-zipkin : Starter for Sleuth with Zipkin - includes Sleuth dependencies
+- Property spring.zipkin.baseUrl is used to configure Zipkin server
+
+**Example** : `DEBUG [beer-service,39853b63c1c3f919,419b9ac9a073bbba,true]`
+
+
+**Dependency**:
+
+```xml
+<dependency>
+	<groupId>org.springframework.cloud</groupId>
+	<artifactId>spring-cloud-starter-zipkin</artifactId>
+	<version>${zipkin-version}</version>
+</dependency>
+```
+
+Add `spring.zipkin.base-url=http://localhost:9411/` to the global `application.properties` file to be aligned with zipkin docker local installation (e.g. `docker run -d -p 9411:9411 openzipkin/zipkin`).
+
+
+Consolidated logging using "logstash/logback"
+--------
+
+Microservices typically will use consolidated logging:
+- Number of different approaches for this - highly dependent on deployment environment
+- To support consolidated logging, log data should be available in JSON
+- Spring Boot by default uses logback, which is easy to configure for JSON output
+
+
+
+**Dependency for logstash/logback**: to allow log consolidation in json.
+
+```xml
+dependency>
+	<groupId>net.logstash.logback</groupId>
+	<artifactId>logstash-logback-encoder</artifactId>
+	<version>6.3</version>
+</dependency>
+```
+
+We need to set a **custom config** in an xml file `logback-spring.xml` for the logstash, in resources folder.
+
+**Important** : We want JSON object for every log message being written out to the console and later in the to be used for consolidated logging.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    ​
+    <springProperty scope="context" name="springAppName" source="spring.application.name"/>
+
+    <!-- You can override this to have a custom pattern -->
+    <property name="CONSOLE_LOG_PATTERN"
+              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
+
+    <!-- Appender to log to console in a JSON format -->
+    <appender name="jsonConsole" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <timeZone>UTC</timeZone>
+                </timestamp>
+                <version/>
+                <logLevel/>
+                <message/>
+                <loggerName/>
+                <threadName/>
+                <context/>
+                <pattern>
+                    <omitEmptyFields>true</omitEmptyFields>
+                    <pattern>
+                        {
+                        "severity": "%level",
+                        "service": "${springAppName:-}",
+                        "trace": "%X{X-B3-TraceId:-}",
+                        "span": "%X{X-B3-SpanId:-}",
+                        "parent": "%X{X-B3-ParentSpanId:-}",
+                        "exportable": "%X{X-Span-Export:-}",
+                        "baggage": "%X{key:-}",
+                        "pid": "${PID:-}",
+                        "thread": "%thread",
+                        "class": "%logger{40}",
+                        "rest": "%message"
+                        }
+                    </pattern>
+                </pattern>
+            </providers>
+        </encoder>
+    </appender>
+    ​
+    <root level="INFO">
+        <appender-ref ref="jsonConsole"/>
+    </root>
+</configuration>
+```

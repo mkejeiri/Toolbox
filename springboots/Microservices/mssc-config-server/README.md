@@ -1,5 +1,7 @@
 # Configuration Server
 
+see : [Spring Cloud Config Reference](https://cloud.spring.io/spring-cloud-config/reference/html/)
+
 Dependencies : 
 ````xml
 <dependency>
@@ -68,10 +70,20 @@ also `http://localhost:8888/anyapp/anyprofile` would work for **default global s
 
 Configuration of server config
 -------
-1- Create a config repo empty(e.g. https://github.com/mkejeiri/mssc-config-repo.git)
+1- Create a config repo empty(e.g. https://github.com/mkejeiri/mssc-config-repo.git).
+
 2- Create a folder that bears the same `spring.application.name` of the µservice (e.g. beer-service within https://github.com/mkejeiri/mssc-config-repo.git).
+
 3- copy the properties file (e.g. `application-mysql.properties`) and rename it according to the profile.
+
 4- update the search path with the name of the folder (e.g. `beer-service`) : e.g. `spring.cloud.config.server.git.search-paths={application}` 
-5- issue a get request to `http://localhost:8888/beer-service/local`
-	- `http://localhost:8888/beer-service/default` get only config from the root folder.
+
+5- issue a get request to `http://localhost:8888/beer-service/local` : 
+- `http://localhost:8888/beer-service/default` gets only config from the root folder.
+
+**Two phases configuration step**: 
+- It will start up, i.e. it will at a bootstrap.properties file to find the environment. 
+- and then it's will continue its normal course.
+
+**we can bootstrap application and profiles** as well.
 
