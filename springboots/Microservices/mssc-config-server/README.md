@@ -87,3 +87,21 @@ Configuration of server config
 
 **we can bootstrap application and profiles** as well.
 
+
+
+Cloud config enryption/decryption
+-----------
+A very simplistic example with symetric key (asymetric key is also  supported)
+
+1- **Add inside** the file `bootstrap.properties` (not application.properties, this should be loaded at bootstrap) the following: 
+
+```properties
+#Should be env property
+encrypt.key=MySuperSecretKey
+```
+
+2- to encrypt **Issue a post request** to `http://localhost:8888/encrypt`  with the password
+
+3- to decrypt **Issue a post request** to `http://localhost:8888/decrypt`  with the password
+
+
