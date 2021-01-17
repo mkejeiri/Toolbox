@@ -1,27 +1,10 @@
-# Spring Security Core - Spring MVC Monolith
+package com.elearning.drink.drinkfactory.config;
 
-This repository contains source code examples used to support Spring Security Core.
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
-#### Difference between `/api/v1/user/*` and `/api/v1/user/**`?
-
-`/api/v1/user/*` - will match any value, up to another "/"
-
-`/api/v1/user/**` - will match all values beginning with start of string (including if another "/" is found.
-
-Basic Auth Security
-----------
-We need to login to get into the root path and also to get the static assets!, to solve this, we need to do the following:
-
-- Create a config `SecurityConfig` which extends `WebSecurityConfigurerAdapter`
-```java
-@Configuration
-@EnableWebSecurity
-public class SecurityConfig extends WebSecurityConfigurerAdapter {...}
-```
-
-- Override the `configure method`
-
-```java
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -32,7 +15,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //this should before the 2nd authorizeRequests,
                 //because the 2nd authorizeRequests is for anyRequest()!!!
                 .authorizeRequests(expressionInterceptUrlRegistry -> {
-				//Permit root path & static assets
+                    //Permit root path & static assets
                     expressionInterceptUrlRegistry.antMatchers("/", "/webjars/**", "/login", "/resources/**")
                             .permitAll();
                 })
@@ -46,6 +29,3 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .httpBasic();
     }
 }
-```
-
-
