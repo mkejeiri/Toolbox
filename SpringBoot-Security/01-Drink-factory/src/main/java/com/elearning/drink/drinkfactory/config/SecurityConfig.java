@@ -1,6 +1,7 @@
 package com.elearning.drink.drinkfactory.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -21,7 +22,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                             //drinks*: allow any query params
                             //&  /drinks/find
-                            .antMatchers("/drinks/find", "/drinks*").permitAll();
+                            .antMatchers("/drinks/find", "/drinks*").permitAll()
+
+                            //rest controller filter
+                    .antMatchers(HttpMethod.GET,"/api/v1/drink/**").permitAll();
                 })
 
                 //Any other request rules!
