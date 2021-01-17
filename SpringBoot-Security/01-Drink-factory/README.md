@@ -21,6 +21,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {...}
 
 - Override the `configure method`
 
+Allows any user to access:
+- root directory "/"
+- All webjars under "/webjars"
+- login form under path "/login"
+- All static resources under path "/resources"
+
 ```java
 @Configuration
 @EnableWebSecurity
@@ -32,7 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //this should before the 2nd authorizeRequests,
                 //because the 2nd authorizeRequests is for anyRequest()!!!
                 .authorizeRequests(expressionInterceptUrlRegistry -> {
-				//Permit root path & static assets
+				//Permit root path & static assets				
                     expressionInterceptUrlRegistry.antMatchers("/", "/webjars/**", "/login", "/resources/**")
                             .permitAll();
                 })

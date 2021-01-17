@@ -25,7 +25,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                             .antMatchers("/drinks/find", "/drinks*").permitAll()
 
                             //rest controller filter
-                    .antMatchers(HttpMethod.GET,"/api/v1/drink/**").permitAll();
+                            .antMatchers(HttpMethod.GET,"/api/v1/drink/**").permitAll()
+                            .mvcMatchers(HttpMethod.GET,"/api/v1/drinkUpc/{upc}").permitAll()
+                    ;
                 })
 
                 //Any other request rules!
