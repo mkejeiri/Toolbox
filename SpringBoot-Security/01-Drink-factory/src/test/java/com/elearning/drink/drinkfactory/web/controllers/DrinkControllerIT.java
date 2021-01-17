@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.security.test.context.support.WithMockUser;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.anonymous;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -29,9 +30,9 @@ public class DrinkControllerIT extends BaseIT {
     CustomerRepository customerRepository;
 
     @MockBean
-    DrinkService drinkService;*/
+    DrinkService drinkService;
 
-    /*@BeforeEach
+    @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders
                 .webAppContextSetup(wac)
@@ -52,6 +53,13 @@ public class DrinkControllerIT extends BaseIT {
     @Test
     void findDrinksWithHttpBasic() throws Exception {
         mockMvc.perform(get("/drinks/find").with(httpBasic("user", "password")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("drinks/findDrinks"))
+                .andExpect(model().attributeExists("drink"));
+    }
+ @Test
+    void findDrinksWithAnonymous() throws Exception {
+        mockMvc.perform(get("/drinks/find").with(anonymous()))
                 .andExpect(status().isOk())
                 .andExpect(view().name("drinks/findDrinks"))
                 .andExpect(model().attributeExists("drink"));

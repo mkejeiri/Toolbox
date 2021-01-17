@@ -15,9 +15,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //this should before the 2nd authorizeRequests,
                 //because the 2nd authorizeRequests is for anyRequest()!!!
                 .authorizeRequests(expressionInterceptUrlRegistry -> {
-                    //Permit root path & static assets
-                    expressionInterceptUrlRegistry.antMatchers("/", "/webjars/**", "/login", "/resources/**")
-                            .permitAll();
+                    expressionInterceptUrlRegistry
+                            //Permit root path & static assets
+                            .antMatchers("/", "/webjars/**", "/login", "/resources/**").permitAll()
+
+                            //drinks*: allow any query params
+                            //&  /drinks/find
+                            .antMatchers("/drinks/find", "/drinks*").permitAll();
                 })
 
                 //Any other request rules!
