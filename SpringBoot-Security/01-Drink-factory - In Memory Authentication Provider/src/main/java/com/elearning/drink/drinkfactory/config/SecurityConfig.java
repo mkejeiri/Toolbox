@@ -2,6 +2,7 @@ package com.elearning.drink.drinkfactory.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -38,4 +39,42 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .httpBasic();
     }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        //we need to specify {noop} encoder.
+        auth.inMemoryAuthentication()
+                .withUser("admin")
+                .password("{noop}password")
+                .roles("ADMIN")
+                .and()
+                .withUser("user")
+                .password("{noop}password")
+                .roles("USER");
+
+        //We could use 'and' to chain or start over as follow:
+        auth.inMemoryAuthentication()
+                .withUser("customer")
+                .password("{noop}password")
+                .roles("CUSTOMER");
+
+    }
+
+    /*  @Override
+    @Bean //to bring it to spring context
+    //In Memory User Details Manager
+    protected UserDetailsService userDetailsService() {
+        UserDetails admin = User.withDefaultPasswordEncoder()
+                .username("admin")
+                .password("password")
+                .roles("ADMIN")
+                .build();
+
+        UserDetails user = User.withDefaultPasswordEncoder()
+                .username("user")
+                .password("password")
+                .roles("USER")
+                .build();
+        return new InMemoryUserDetailsManager(admin,user);
+    }*/
 }

@@ -51,8 +51,23 @@ public class DrinkControllerIT extends BaseIT {
     }
 
     @Test
+    void initiCreationCustomerForm() throws Exception {
+        mockMvc.perform(get("/drinks/new").with(httpBasic("customer", "password")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("drinks/createDrink"))
+                .andExpect(model().attributeExists("drink"));
+    }
+ @Test
+    void initiCreationForm() throws Exception {
+        mockMvc.perform(get("/drinks/new").with(httpBasic("admin", "password")))
+                .andExpect(status().isOk())
+                .andExpect(view().name("drinks/createDrink"))
+                .andExpect(model().attributeExists("drink"));
+    }
+
+    @Test
     void findDrinksWithHttpBasic() throws Exception {
-        mockMvc.perform(get("/drinks/find").with(httpBasic("user", "password")))
+        mockMvc.perform(get("/drinks/find").with(httpBasic("admin", "password")))
                 .andExpect(status().isOk())
                 .andExpect(view().name("drinks/findDrinks"))
                 .andExpect(model().attributeExists("drink"));
