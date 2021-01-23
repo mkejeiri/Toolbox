@@ -70,7 +70,7 @@ Spring Security Authentication Process
 - **Password Encoder** : Service to `encrypt` and `verify` **passwords**
 - **Security Context** : Holds details about `authenticated entity`
 
-![pic](images/spring-filters.jpg)
+![pic](Images/spring-filters.jpg)
 
 #### In Memory User Details Manager
 
