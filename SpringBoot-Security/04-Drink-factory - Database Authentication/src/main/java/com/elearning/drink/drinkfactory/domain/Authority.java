@@ -1,0 +1,27 @@
+package com.elearning.drink.drinkfactory.domain;
+
+import lombok.*;
+
+import javax.persistence.*;
+import java.util.Set;
+
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Setter
+@Getter
+@Builder
+@Entity
+@Table(name = "Roles")
+public class Authority {
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+    private String role;
+
+    //We can use the project Lombok @Singular annotation, and in Builder pattern,
+    //we will get a property called authority, and then we can add in a Singular authority via the Builder pattern.
+    //@Singular : we aren't building authorities and adding user to it but the inverse is true.
+    @ManyToMany(mappedBy = "authorities")
+    private Set<User> users;
+}
