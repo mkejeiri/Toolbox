@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.ConstraintViolationException;
@@ -94,6 +95,7 @@ public class DrinkRestController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping({"drink/{drinkId}"})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteDrink(@PathVariable("drinkId") UUID drinkId){

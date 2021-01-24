@@ -300,7 +300,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }	
 ```
 
-
+ **Note** : the primary difference between `@Secured` and `@PreAuthorize`, is that the `@PreAuthorize` annotation allows us to use **Security Expression Based Syntax**, which gives us a **lot of flexibility**.
+ 
+ 
 
 
 

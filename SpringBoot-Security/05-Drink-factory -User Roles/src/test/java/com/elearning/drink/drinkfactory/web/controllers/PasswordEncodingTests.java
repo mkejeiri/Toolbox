@@ -1,5 +1,6 @@
 package com.elearning.drink.drinkfactory.web.controllers;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.LdapShaPasswordEncoder;
@@ -11,11 +12,9 @@ import org.springframework.util.DigestUtils;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
+@Disabled
 public class PasswordEncodingTests {
     static final String PASSWORD = "password";
-
-
     @Test
     void testBcrypt() {
         //strength = 10 by default -> PasswordEncoder bcrypt = new BCryptPasswordEncoder();
@@ -49,6 +48,7 @@ public class PasswordEncodingTests {
         String encodedPassword = sha256.encode(PASSWORD);
         assertTrue(sha256.matches(PASSWORD, encodedPassword));
     }
+
     @Test
     void testLdap() {
         //this a default

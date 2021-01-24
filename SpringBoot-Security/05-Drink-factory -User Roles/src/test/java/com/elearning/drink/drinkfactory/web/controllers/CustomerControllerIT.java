@@ -35,10 +35,10 @@ public class CustomerControllerIT extends BaseIT {
     @Nested
     class ListCustomers{
         @ParameterizedTest(name = "#{index} with [{arguments}]")
-        @MethodSource("com.elearning.drink.drinkfactory.web.controllers.CustomerControllerIT#getStreamAdminCustomer")
-        void testListCustomersAUTH(String user, String pwd) throws Exception {
+        @MethodSource("com.elearning.drink.drinkfactory.web.controllers.CustomerControllerIT#getStreamCustomer")
+        void testListCustomersAUTH(String user, String password) throws Exception {
             mockMvc.perform(get("/customers")
-                    .with(httpBasic(user, pwd)))
+                    .with(httpBasic(user, password)))
                     .andExpect(status().isOk());
 
         }

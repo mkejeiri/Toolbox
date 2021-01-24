@@ -77,9 +77,7 @@ public class DrinkControllerIT extends BaseIT {
  @Test
     void findDrinksWithAnonymous() throws Exception {
         mockMvc.perform(get("/drinks/find").with(anonymous()))
-                .andExpect(status().isOk())
-                .andExpect(view().name("drinks/findDrinks"))
-                .andExpect(model().attributeExists("drink"));
+                .andExpect(status().isUnauthorized());
     }
 
 }
