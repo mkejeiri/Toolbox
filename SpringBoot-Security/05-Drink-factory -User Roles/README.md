@@ -268,15 +268,37 @@ public class CustomerControllerIT extends BaseIT {
 }
 
 ```
+--------------
 
+### Security Expression Based Syntax
 
+We have to **add** `@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)` into `SecurityConfig` **class** :
 
+```java
+@Configuration
+@EnableWebSecurity
+//@EnableGlobalMethodSecurity(securedEnabled = true)
+@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+....
+}
+```
 
+**and** add **Security Expression Based Syntax**, i.e. `@PreAuthorize("hasRole('ADMIN')")` (see [CustomerController](src/main/java/com/elearning/drink/drinkfactory/web/controllers/CustomerController.java) & [CustomerControllerIT](src/test/java/com/elearning/drink/drinkfactory/web/controllers/CustomerControllerIT.java) for integration tests):
 
+```java
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/new")
+    public String processCreationForm(Customer customer) {
+        //ToDO: Add Service
+        Customer newCustomer = Customer.builder()
+                .customerName(customer.getCustomerName())
+                .build();
 
-
-
-
+        Customer savedCustomer= customerRepository.save(newCustomer);
+        return "redirect:/customers/" + savedCustomer.getId();
+    }	
+```
 
 
 
