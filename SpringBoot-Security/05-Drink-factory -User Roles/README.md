@@ -169,15 +169,22 @@ The same goes for `CUSTOMER` role-> checkout the integration tests.
 
                             //drinks*: allow any query params
                             //&  /drinks/find
-                            .antMatchers("/drinks/find", "/drinks*").permitAll()
-                            .mvcMatchers("/brewery/breweries**").hasAnyRole("CUSTOMER","ADMIN")
+                            //.antMatchers("/drinks/find", "/drinks*")
+                            //.hasAnyRole("USER","CUSTOMER","ADMIN")
+                            .mvcMatchers("/brewery/breweries**")
+                            .hasAnyRole("CUSTOMER", "ADMIN")
 
                             //rest controller filter
-                            .antMatchers(HttpMethod.GET, "/api/v1/drink/**").permitAll()
+                            //.antMatchers(HttpMethod.GET, "/api/v1/drink/**").permitAll()
+                            .mvcMatchers(HttpMethod.GET, "/api/v1/drink/**")
+                            .hasAnyRole("USER", "CUSTOMER", "ADMIN")
                             .mvcMatchers(HttpMethod.DELETE, "/api/v1/drink/**").hasRole("ADMIN")
-                            .mvcMatchers(HttpMethod.GET, "/brewery/api/v1/breweries**")
-                            .hasAnyRole("CUSTOMER","ADMIN")
-                            .mvcMatchers(HttpMethod.GET, "/api/v1/drinkUpc/{upc}").permitAll()
+                            .mvcMatchers(HttpMethod.GET, "/brewery/api/v1/breweries")
+                            .hasAnyRole("CUSTOMER", "ADMIN")
+                            .mvcMatchers(HttpMethod.GET, "/api/v1/drinkUpc/{upc}")
+                            .hasAnyRole("USER", "CUSTOMER", "ADMIN")
+                            .mvcMatchers("/drinks/find", "/drinks/{drinkId}")
+                            .hasAnyRole("USER", "CUSTOMER", "ADMIN")
                     ;
                 })
 
@@ -199,6 +206,69 @@ The same goes for `CUSTOMER` role-> checkout the integration tests.
 **Notes**: 
 - **Forbidden**: user authenticated but not allowed access to the ressource.
 - **Unauthorised**: user not authenticated.
+
+---------
+
+### Method Security - Example
+
+We **add** the `@EnableGlobalMethodSecurity(securedEnabled = true)` into `public class SecurityConfig extends WebSecurityConfigurerAdapter` and `@Secured({"ROLE_ADMIN", "ROLE_CUSTOMER"})` into `CustomerController` :
+ 
+```java
+@Configuration
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(securedEnabled = true)
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+....
+}
+```
+ 
+
+```java
+@RequestMapping("/customers")
+@Controller
+public class CustomerController {
+
+    //ToDO: Add service
+    private final CustomerRepository customerRepository;
+
+    @RequestMapping("/find")
+    public String findCustomers(Model model) {
+        model.addAttribute("customer", Customer.builder().build());
+        return "customers/findCustomers";
+    }
+
+    @Secured({"ROLE_ADMIN", "ROLE_CUSTOMER"})
+    @GetMapping
+    public String processFindFormReturnMany(Customer customer, BindingResult result, Model model) { 
+	...
+	}
+	...
+}
+```
+
+To follow the **TDD** approach we need to **write** the following **test first** :
+
+```java
+@SpringBootTest
+public class CustomerControllerIT extends BaseIT {
+    @ParameterizedTest(name = "#{index} [{arguments}]")
+    @MethodSource("com.elearning.drink.drinkfactory.web.controllers.CustomerControllerIT#getStreamAdminCustomer")
+    void testListCustomerAuth(String user, String password) throws Exception {
+        mockMvc.perform(get("/customers")
+                .with(httpBasic(user, password)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void testListCustomerNotAuth() throws Exception {
+        mockMvc.perform(get("/customers")
+                .with(httpBasic("user", "password")))
+                .andExpect(status().isForbidden());
+    }
+}
+
+```
+
 
 
 
