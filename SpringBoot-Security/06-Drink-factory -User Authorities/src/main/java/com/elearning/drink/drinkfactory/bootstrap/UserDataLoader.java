@@ -13,6 +13,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -83,6 +84,7 @@ public class UserDataLoader implements ApplicationListener<ContextRefreshedEvent
 
     }
 
+    @Transactional
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
         if (authorityRepository.count() == 0) loadSecurityData();

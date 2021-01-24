@@ -30,6 +30,7 @@ public class DrinkRestController {
 
     private final DrinkService drinkService;
 
+    @PreAuthorize("hasAuthority('drink.read')")
     @GetMapping(produces = { "application/json" }, path = "drink")
     public ResponseEntity<DrinkPagedList> listDrinks(@RequestParam(value = "pageNumber", required = false) Integer pageNumber,
                                                     @RequestParam(value = "pageSize", required = false) Integer pageSize,
@@ -56,6 +57,7 @@ public class DrinkRestController {
         return new ResponseEntity<>(drinkList, HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAuthority('drink.read')")
     @GetMapping(path = {"drink/{drinkId}"}, produces = { "application/json" })
     public ResponseEntity<DrinkDto> getDrinkById(@PathVariable("drinkId") UUID drinkId,
                                                 @RequestParam(value = "showInventoryOnHand", required = false) Boolean showInventoryOnHand){
@@ -69,11 +71,13 @@ public class DrinkRestController {
         return new ResponseEntity<>(drinkService.findDrinkById(drinkId, showInventoryOnHand), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAuthority('drink.read')")
     @GetMapping(path = {"drinkUpc/{upc}"}, produces = { "application/json" })
     public ResponseEntity<DrinkDto> getDrinkByUpc(@PathVariable("upc") String upc){
         return new ResponseEntity<>(drinkService.findDrinkByUpc(upc), HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAuthority('drink.create')")
     @PostMapping(path = "drink")
     public ResponseEntity saveNewDrink(@Valid @RequestBody DrinkDto drinkDto){
 
@@ -87,6 +91,7 @@ public class DrinkRestController {
         return new ResponseEntity(httpHeaders, HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasAuthority('drink.update')")
     @PutMapping(path = {"drink/{drinkId}"}, produces = { "application/json" })
     public ResponseEntity updateDrink(@PathVariable("drinkId") UUID drinkId, @Valid @RequestBody DrinkDto drinkDto){
 
@@ -95,7 +100,8 @@ public class DrinkRestController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('drink.delete')")
+    //@PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping({"drink/{drinkId}"})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteDrink(@PathVariable("drinkId") UUID drinkId){

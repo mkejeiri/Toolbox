@@ -65,19 +65,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                             //.hasAnyRole("USER","CUSTOMER","ADMIN")
                             .mvcMatchers("/brewery/breweries**")
                             .hasAnyRole("CUSTOMER", "ADMIN")
+                            .mvcMatchers("/drinks/find", "/drinks/{drinkId}")
+                            .hasAnyRole("USER", "CUSTOMER", "ADMIN")
+
 
                             //rest controller filter
                             //.antMatchers(HttpMethod.GET, "/api/v1/drink/**").permitAll()
-                            .mvcMatchers(HttpMethod.GET, "/api/v1/drink/**")
-                            .hasAnyRole("USER", "CUSTOMER", "ADMIN")
-
+//                            .mvcMatchers(HttpMethod.GET, "/api/v1/drink/**")
+//                            .hasAnyRole("USER", "CUSTOMER", "ADMIN")
 //                          .mvcMatchers(HttpMethod.DELETE, "/api/v1/drink/**").hasRole("ADMIN") -> replaced by @PreAuthorize("hasRole('ADMIN')")
                             .mvcMatchers(HttpMethod.GET, "/brewery/api/v1/breweries")
                             .hasAnyRole("CUSTOMER", "ADMIN")
-                            .mvcMatchers(HttpMethod.GET, "/api/v1/drinkUpc/{upc}")
-                            .hasAnyRole("USER", "CUSTOMER", "ADMIN")
-                            .mvcMatchers("/drinks/find", "/drinks/{drinkId}")
-                            .hasAnyRole("USER", "CUSTOMER", "ADMIN")
+//                            .mvcMatchers(HttpMethod.GET, "/api/v1/drinkUpc/{upc}")
+//                            .hasAnyRole("USER", "CUSTOMER", "ADMIN")
+
                     ;
                 })
 

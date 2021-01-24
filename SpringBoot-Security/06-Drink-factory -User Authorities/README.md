@@ -125,9 +125,116 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
 }
 
 ```
-
+-----------
 Update the **[loadSecurityData](src/main/java/com/elearning/drink/drinkfactory/bootstrap/UserDataLoader.java)** class.
-
 
 **Note** : Hibernate doesn't support immutable collection (e.g **Set**), we wrap **Set** in a **HashSet**.
 `customerRole.setAuthorities(new HashSet<>(Set.of(readDrink, readCustomer, readBrewery)));`
+-----------
+
+
+###  Update Spring Security for RESTful Drink API:
+
+
+Use a **fine grained authorities/permission** instead of **antMatchers** & **mvcMatchers** for restApi.
+
+Using `@PreAuthorize("hasAuthority('drink.read')")`, `@PreAuthorize("hasAuthority('drink.create')")`,`@PreAuthorize("hasAuthority('drink.update')")`, and `@PreAuthorize("hasAuthority('drink.delete')")` on action methods, we could get rid of **antMatchers** & **mvcMatchers**.
+
+
+```java
+...
+ @PreAuthorize("hasAuthority('drink.read')")
+    @GetMapping(produces = { "application/json" }, path = "drink")
+    public ResponseEntity<DrinkPagedList> listDrinks(@RequestParam(value = "pageNumber", required = false) Integer pageNumber,
+                                                    @RequestParam(value = "pageSize", required = false) Integer pageSize,
+                                                    @RequestParam(value = "drinkName", required = false) String drinkName,
+                                                    @RequestParam(value = "drinkStyle", required = false) DrinkStyleEnum drinkStyle,
+                                                    @RequestParam(value = "showInventoryOnHand", required = false) Boolean showInventoryOnHand){
+
+        log.debug("Listing Drinks");
+
+        if (showInventoryOnHand == null) {
+            showInventoryOnHand = false;
+        }
+
+        if (pageNumber == null || pageNumber < 0){
+            pageNumber = DEFAULT_PAGE_NUMBER;
+        }
+
+        if (pageSize == null || pageSize < 1) {
+            pageSize = DEFAULT_PAGE_SIZE;
+        }
+
+        DrinkPagedList drinkList = drinkService.listDrinks(drinkName, drinkStyle, PageRequest.of(pageNumber, pageSize), showInventoryOnHand);
+
+        return new ResponseEntity<>(drinkList, HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasAuthority('drink.read')")
+    @GetMapping(path = {"drink/{drinkId}"}, produces = { "application/json" })
+    public ResponseEntity<DrinkDto> getDrinkById(@PathVariable("drinkId") UUID drinkId,
+                                                @RequestParam(value = "showInventoryOnHand", required = false) Boolean showInventoryOnHand){
+
+        log.debug("Get Request for DrinkId: " + drinkId);
+
+        if (showInventoryOnHand == null) {
+            showInventoryOnHand = false;
+        }
+
+        return new ResponseEntity<>(drinkService.findDrinkById(drinkId, showInventoryOnHand), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasAuthority('drink.read')")
+    @GetMapping(path = {"drinkUpc/{upc}"}, produces = { "application/json" })
+    public ResponseEntity<DrinkDto> getDrinkByUpc(@PathVariable("upc") String upc){
+        return new ResponseEntity<>(drinkService.findDrinkByUpc(upc), HttpStatus.OK);
+    }
+
+    @PreAuthorize("hasAuthority('drink.create')")
+    @PostMapping(path = "drink")
+    public ResponseEntity saveNewDrink(@Valid @RequestBody DrinkDto drinkDto){
+
+        DrinkDto savedDto = drinkService.saveDrink(drinkDto);
+
+        HttpHeaders httpHeaders = new HttpHeaders();
+
+        //todo hostname for uri
+        httpHeaders.add("Location", "/api/v1/drink_service/" + savedDto.getId().toString());
+
+        return new ResponseEntity(httpHeaders, HttpStatus.CREATED);
+    }
+
+    @PreAuthorize("hasAuthority('drink.update')")
+    @PutMapping(path = {"drink/{drinkId}"}, produces = { "application/json" })
+    public ResponseEntity updateDrink(@PathVariable("drinkId") UUID drinkId, @Valid @RequestBody DrinkDto drinkDto){
+
+        drinkService.updateDrink(drinkId, drinkDto);
+
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    @PreAuthorize("hasAuthority('drink.delete')")
+    //@PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping({"drink/{drinkId}"})
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteDrink(@PathVariable("drinkId") UUID drinkId){
+        drinkService.deleteById(drinkId);
+    }
+...
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
