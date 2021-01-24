@@ -19,14 +19,14 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    public RestHeaderAuthFilter restHeaderAuthFilter(AuthenticationManager authenticationManager){
+    public RestHeaderAuthFilter restHeaderAuthFilter(AuthenticationManager authenticationManager) {
         RestHeaderAuthFilter filter = new RestHeaderAuthFilter(new AntPathRequestMatcher("/api/**"));
         filter.setAuthenticationManager(authenticationManager);
         return filter;
     }
 
- public RestParamAuthFilter restParamAuthFilter(AuthenticationManager authenticationManager){
-     RestParamAuthFilter filter = new RestParamAuthFilter(new AntPathRequestMatcher("/api/**"));
+    public RestParamAuthFilter restParamAuthFilter(AuthenticationManager authenticationManager) {
+        RestParamAuthFilter filter = new RestParamAuthFilter(new AntPathRequestMatcher("/api/**"));
         filter.setAuthenticationManager(authenticationManager);
         return filter;
     }
@@ -37,7 +37,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.addFilterBefore(restHeaderAuthFilter(authenticationManager()),
                 UsernamePasswordAuthenticationFilter.class)
-        .csrf().disable();
+                .csrf().disable();
 
 
         http.addFilterBefore(restParamAuthFilter(authenticationManager()),
@@ -52,15 +52,26 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     expressionInterceptUrlRegistry
                             //Permit root path & static assets
                             .antMatchers("/", "/webjars/**", "/login", "/resources/**").permitAll()
-                            .antMatchers( "/h2-console/**").permitAll() //don't use in production
+                            .antMatchers("/h2-console/**").permitAll() //don't use in production
 
                             //drinks*: allow any query params
                             //&  /drinks/find
-                            .antMatchers("/drinks/find", "/drinks*").permitAll()
+                            //.antMatchers("/drinks/find", "/drinks*")
+                            //.hasAnyRole("USER","CUSTOMER","ADMIN")
+                            .mvcMatchers("/brewery/breweries**")
+                            .hasAnyRole("CUSTOMER", "ADMIN")
 
                             //rest controller filter
-                            .antMatchers(HttpMethod.GET, "/api/v1/drink/**").permitAll()
-                            .mvcMatchers(HttpMethod.GET, "/api/v1/drinkUpc/{upc}").permitAll()
+                            //.antMatchers(HttpMethod.GET, "/api/v1/drink/**").permitAll()
+                            .mvcMatchers(HttpMethod.GET, "/api/v1/drink/**")
+                            .hasAnyRole("USER", "CUSTOMER", "ADMIN")
+                            .mvcMatchers(HttpMethod.DELETE, "/api/v1/drink/**").hasRole("ADMIN")
+                            .mvcMatchers(HttpMethod.GET, "/brewery/api/v1/breweries")
+                            .hasAnyRole("CUSTOMER", "ADMIN")
+                            .mvcMatchers(HttpMethod.GET, "/api/v1/drinkUpc/{upc}")
+                            .hasAnyRole("USER", "CUSTOMER", "ADMIN")
+                            .mvcMatchers("/drinks/find", "/drinks/{drinkId}")
+                            .hasAnyRole("USER", "CUSTOMER", "ADMIN")
                     ;
                 })
 
@@ -77,7 +88,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.headers().frameOptions().sameOrigin();
     }
 
-   @Bean
+    @Bean
     PasswordEncoder passwordEncoder() {
         return CustomPasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
