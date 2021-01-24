@@ -126,3 +126,8 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
 
 ```
 
+Update the **[loadSecurityData](src/main/java/com/elearning/drink/drinkfactory/bootstrap/UserDataLoader.java)** class.
+
+
+**Note** : Hibernate doesn't support immutable collection (e.g **Set**), we wrap **Set** in a **HashSet**.
+`customerRole.setAuthorities(new HashSet<>(Set.of(readDrink, readCustomer, readBrewery)));`
