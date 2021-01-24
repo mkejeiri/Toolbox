@@ -4,13 +4,15 @@ import com.elearning.drink.drinkfactory.bootstrap.DefaultDrinkLoader;
 import com.elearning.drink.drinkfactory.web.controllers.BaseIT;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest
+//@WebMvcTest
+@SpringBootTest
 class DrinkRestControllerTestIT extends BaseIT {
 
     @Test

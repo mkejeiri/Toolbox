@@ -34,7 +34,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-        http.headers().frameOptions().disable();
 
         http.addFilterBefore(restHeaderAuthFilter(authenticationManager()),
                 UsernamePasswordAuthenticationFilter.class)
@@ -53,12 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     expressionInterceptUrlRegistry
                             //Permit root path & static assets
                             .antMatchers("/", "/webjars/**", "/login", "/resources/**").permitAll()
-                            .antMatchers(HttpMethod.GET, "/h2-console/**").permitAll()
-                            .antMatchers(HttpMethod.HEAD, "/h2-console/**").permitAll()
-                            .antMatchers(HttpMethod.PATCH, "/h2-console/**").permitAll()
-                            .antMatchers(HttpMethod.POST, "/h2-console/**").permitAll()
-                            .antMatchers(HttpMethod.PUT, "/h2-console/**").permitAll()
-                            .antMatchers(HttpMethod.TRACE, "/h2-console/**").permitAll()
+                            .antMatchers( "/h2-console/**").permitAll() //don't use in production
 
                             //drinks*: allow any query params
                             //&  /drinks/find
@@ -77,6 +71,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .formLogin()
                 .and()
                 .httpBasic();
+
+        //by default, Spring Security is preventing frames
+//        http.headers().frameOptions().disable();
+        http.headers().frameOptions().sameOrigin();
     }
 
    @Bean
@@ -85,22 +83,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        //we need to specify {noop} encoder.
-        auth.inMemoryAuthentication()
-                .withUser("admin")
-                .password("{bcrypt}$2a$10$ak6SgBKbU/.GnrpkY1pqvuMbUIMq2lTYjKBmBLmR07l7BQp42ohWu")
-                .roles("ADMIN")
-                .and()
-                .withUser("user")
-                .password("{sha256}c788604069f24a84b241cf3a35dd78e680b7c1be28461b36fc558d924ace8bb5a35cb5e1de753707")
-                .roles("USER");
-
-        auth.inMemoryAuthentication()
-                .withUser("customer")
-                .password("{bcrypt}$2a$10$ak6SgBKbU/.GnrpkY1pqvuMbUIMq2lTYjKBmBLmR07l7BQp42ohWu")
-                .roles("CUSTOMER");
-    }
+//    @Override
+//    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+//        //we need to specify {noop} encoder.
+//        auth.inMemoryAuthentication()
+//                .withUser("admin")
+//                .password("{bcrypt}$2a$10$ak6SgBKbU/.GnrpkY1pqvuMbUIMq2lTYjKBmBLmR07l7BQp42ohWu")
+//                .roles("ADMIN")
+//                .and()
+//                .withUser("user")
+//                .password("{sha256}c788604069f24a84b241cf3a35dd78e680b7c1be28461b36fc558d924ace8bb5a35cb5e1de753707")
+//                .roles("USER");
+//
+//        auth.inMemoryAuthentication()
+//                .withUser("customer")
+//                .password("{bcrypt}$2a$10$ak6SgBKbU/.GnrpkY1pqvuMbUIMq2lTYjKBmBLmR07l7BQp42ohWu")
+//                .roles("CUSTOMER");
+//    }
 
 }
