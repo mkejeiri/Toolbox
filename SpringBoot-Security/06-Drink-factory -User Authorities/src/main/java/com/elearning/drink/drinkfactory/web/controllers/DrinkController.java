@@ -4,10 +4,14 @@ package com.elearning.drink.drinkfactory.web.controllers;
 import com.elearning.drink.drinkfactory.domain.Drink;
 import com.elearning.drink.drinkfactory.repositories.DrinkInventoryRepository;
 import com.elearning.drink.drinkfactory.repositories.DrinkRepository;
+import com.elearning.drink.drinkfactory.security.perms.DrinkCreatePermission;
+import com.elearning.drink.drinkfactory.security.perms.DrinkReadPermission;
+import com.elearning.drink.drinkfactory.security.perms.DrinkUpdatePermission;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -30,13 +34,16 @@ public class DrinkController {
     private final DrinkRepository drinkRepository;
     private final DrinkInventoryRepository drinkInventoryRepository;
 
-
+    //    @PreAuthorize("hasAuthority('drink.read')")
+    @DrinkReadPermission
     @RequestMapping("/find")
     public String findDrinks(Model model) {
         model.addAttribute("drink", Drink.builder().build());
         return "drinks/findDrinks";
     }
 
+    //    @PreAuthorize("hasAuthority('drink.read')")
+    @DrinkReadPermission
     @GetMapping
     public String processFindFormReturnMany(Drink drink, BindingResult result, Model model) {
         // find drinks by name
@@ -60,6 +67,8 @@ public class DrinkController {
     }
 
 
+    //    @PreAuthorize("hasAuthority('drink.read')")
+    @DrinkReadPermission
     @GetMapping("/{drinkId}")
     public ModelAndView showDrink(@PathVariable UUID drinkId) {
         ModelAndView mav = new ModelAndView("drinks/drinkDetails");
@@ -68,12 +77,16 @@ public class DrinkController {
         return mav;
     }
 
+    //    @PreAuthorize("hasAuthority('drink.create')")
+    @DrinkCreatePermission
     @GetMapping("/new")
     public String initCreationForm(Model model) {
         model.addAttribute("drink", Drink.builder().build());
         return "drinks/createDrink";
     }
 
+    //@PreAuthorize("hasAuthority('drink.create')")
+    @DrinkCreatePermission
     @PostMapping("/new")
     public String processCreationForm(Drink drink) {
         //ToDO: Add Service
@@ -90,6 +103,8 @@ public class DrinkController {
         return "redirect:/drinks/" + savedDrink.getId();
     }
 
+    //    @PreAuthorize("hasAuthority('drink.update')")
+    @DrinkUpdatePermission
     @GetMapping("/{drinkId}/edit")
     public String initUpdateDrinkForm(@PathVariable UUID drinkId, Model model) {
         if (drinkRepository.findById(drinkId).isPresent())
@@ -97,6 +112,8 @@ public class DrinkController {
         return "drinks/createOrUpdateDrink";
     }
 
+    //    @PreAuthorize("hasAuthority('drink.update')")
+    @DrinkUpdatePermission
     @PostMapping("/{drinkId}/edit")
     public String processUpdateForm(@Valid Drink drink, BindingResult result) {
         if (result.hasErrors()) {

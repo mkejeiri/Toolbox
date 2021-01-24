@@ -43,10 +43,10 @@ public class DrinkControllerIT extends BaseIT {
     }*/
 
     //force any user to bypass security core module
-    @WithMockUser("spring")
+    //@WithMockUser("user")
     @Test
     void findDrinks() throws Exception {
-        mockMvc.perform(get("/drinks/find"))
+        mockMvc.perform(get("/drinks/find").with(httpBasic("user", "password")))
                 .andExpect(status().isOk())
                 .andExpect(view().name("drinks/findDrinks"))
                 .andExpect(model().attributeExists("drink"));
@@ -54,7 +54,7 @@ public class DrinkControllerIT extends BaseIT {
 
     @Test
     void initiCreationCustomerForm() throws Exception {
-        mockMvc.perform(get("/drinks/new").with(httpBasic("customer", "password")))
+        mockMvc.perform(get("/drinks/new").with(httpBasic("admin", "password")))
                 .andExpect(status().isOk())
                 .andExpect(view().name("drinks/createDrink"))
                 .andExpect(model().attributeExists("drink"));

@@ -1,5 +1,9 @@
 package com.elearning.drink.drinkfactory.web.controllers.api;
 
+import com.elearning.drink.drinkfactory.security.perms.DrinkCreatePermission;
+import com.elearning.drink.drinkfactory.security.perms.DrinkDeletePermission;
+import com.elearning.drink.drinkfactory.security.perms.DrinkReadPermission;
+import com.elearning.drink.drinkfactory.security.perms.DrinkUpdatePermission;
 import com.elearning.drink.drinkfactory.services.DrinkService;
 import com.elearning.drink.drinkfactory.web.model.DrinkDto;
 import com.elearning.drink.drinkfactory.web.model.DrinkPagedList;
@@ -30,7 +34,8 @@ public class DrinkRestController {
 
     private final DrinkService drinkService;
 
-    @PreAuthorize("hasAuthority('drink.read')")
+    //@PreAuthorize("hasAuthority('drink.read')")
+    @DrinkReadPermission
     @GetMapping(produces = { "application/json" }, path = "drink")
     public ResponseEntity<DrinkPagedList> listDrinks(@RequestParam(value = "pageNumber", required = false) Integer pageNumber,
                                                     @RequestParam(value = "pageSize", required = false) Integer pageSize,
@@ -57,7 +62,8 @@ public class DrinkRestController {
         return new ResponseEntity<>(drinkList, HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('drink.read')")
+//    @PreAuthorize("hasAuthority('drink.read')")
+    @DrinkReadPermission
     @GetMapping(path = {"drink/{drinkId}"}, produces = { "application/json" })
     public ResponseEntity<DrinkDto> getDrinkById(@PathVariable("drinkId") UUID drinkId,
                                                 @RequestParam(value = "showInventoryOnHand", required = false) Boolean showInventoryOnHand){
@@ -71,13 +77,15 @@ public class DrinkRestController {
         return new ResponseEntity<>(drinkService.findDrinkById(drinkId, showInventoryOnHand), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('drink.read')")
+//    @PreAuthorize("hasAuthority('drink.read')")
+    @DrinkReadPermission
     @GetMapping(path = {"drinkUpc/{upc}"}, produces = { "application/json" })
     public ResponseEntity<DrinkDto> getDrinkByUpc(@PathVariable("upc") String upc){
         return new ResponseEntity<>(drinkService.findDrinkByUpc(upc), HttpStatus.OK);
     }
 
-    @PreAuthorize("hasAuthority('drink.create')")
+    //@PreAuthorize("hasAuthority('drink.create')")
+    @DrinkCreatePermission
     @PostMapping(path = "drink")
     public ResponseEntity saveNewDrink(@Valid @RequestBody DrinkDto drinkDto){
 
@@ -91,7 +99,8 @@ public class DrinkRestController {
         return new ResponseEntity(httpHeaders, HttpStatus.CREATED);
     }
 
-    @PreAuthorize("hasAuthority('drink.update')")
+    //@PreAuthorize("hasAuthority('drink.update')")
+    @DrinkUpdatePermission
     @PutMapping(path = {"drink/{drinkId}"}, produces = { "application/json" })
     public ResponseEntity updateDrink(@PathVariable("drinkId") UUID drinkId, @Valid @RequestBody DrinkDto drinkDto){
 
@@ -100,8 +109,10 @@ public class DrinkRestController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PreAuthorize("hasAuthority('drink.delete')")
+
+    //@PreAuthorize("hasAuthority('drink.delete')")
     //@PreAuthorize("hasRole('ADMIN')")
+    @DrinkDeletePermission
     @DeleteMapping({"drink/{drinkId}"})
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteDrink(@PathVariable("drinkId") UUID drinkId){

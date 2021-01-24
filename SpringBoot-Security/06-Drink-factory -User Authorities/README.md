@@ -224,7 +224,18 @@ Using `@PreAuthorize("hasAuthority('drink.read')")`, `@PreAuthorize("hasAuthorit
 
 ```
 
+###  Custom Authorization Annotations
+to make the code more **readable** and **cleaner** (i.e. improve the code quality by not repeating the same logic in multiple places), we use our **customs annotations** such as : `@DrinkReadPermission`, `@DrinkCreatePermission`, `@DrinkUpdatePermission`,...
 
+```java
+//Instruct the Java compiler that this annotation should be retained at runtime so
+//that reflection can be done at runtime, so it can see this annotation.
+//so that is important for it to work with Spring Security.
+@Retention(RetentionPolicy.RUNTIME)
+@PreAuthorize("hasAuthority('drink.read')")
+public @interface DrinkReadPermission {
+}
+```  
 
 
 
