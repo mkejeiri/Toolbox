@@ -8,12 +8,9 @@ import com.elearning.drink.drinkfactory.repositories.security.RoleRepository;
 import com.elearning.drink.drinkfactory.repositories.security.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
-import javax.transaction.Transactional;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,7 +18,9 @@ import java.util.Set;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class UserDataLoader implements ApplicationListener<ContextRefreshedEvent> {
+
+//Not used!
+public class UserDataLoader /*implements ApplicationListener<ContextRefreshedEvent> */{
     private final AuthorityRepository authorityRepository;
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
@@ -95,11 +94,11 @@ public class UserDataLoader implements ApplicationListener<ContextRefreshedEvent
 
     }
 
-    @Transactional
-    @Override
-    public void onApplicationEvent(ContextRefreshedEvent event) {
-        if (authorityRepository.count() == 0) loadSecurityData();
-
-
-    }
+//    @Transactional
+//    @Override
+//    public void onApplicationEvent(ContextRefreshedEvent event) {
+//        if (authorityRepository.count() == 0) loadSecurityData();
+//
+//
+//    }
 }

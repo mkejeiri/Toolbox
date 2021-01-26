@@ -35,7 +35,7 @@ here we add drink order authorithy and update the roles
 ```
 
 
-### use domain User as customer spring security user
+### use domain User as custom spring security user
 
 **domain** `User` need to **implement** `UserDetails` and `CredentialsContainer`.
 
@@ -85,7 +85,7 @@ public class User implements UserDetails, CredentialsContainer {
 
 ```
 
-We 're not doing a **type conversion** to **user** provided by **Spring Security**, because we are **implementing** that **type natively** through **User** class. We need to **adjust** `JpaUserDetailsService` **class** accordingly:
+We 're not doing a **type conversion** to **user** provided by **Spring Security**, because we are **implementing** that **type natively** through **User** class this allow us to add a customer property. We need to **adjust** `JpaUserDetailsService` **class** accordingly:
 
 ```java
 public class JpaUserDetailsService implements UserDetailsService {
@@ -100,5 +100,15 @@ public class JpaUserDetailsService implements UserDetailsService {
     }
 }
 ```
+
+
+### Link Customer to user 
+
+We link customer to user and indirectly to role, it more cleaner approach. We also refactored `DefaultDrinkLoader`  class and merge `UserDataLoader` class into it.
+
+
+
+
+
 
 
