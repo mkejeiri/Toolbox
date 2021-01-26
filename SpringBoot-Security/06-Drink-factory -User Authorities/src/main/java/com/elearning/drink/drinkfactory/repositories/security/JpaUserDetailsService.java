@@ -31,22 +31,24 @@ public class JpaUserDetailsService implements UserDetailsService {
         User domainUser = userRepository.findByUsername(username).orElseThrow(() ->
                 new UsernameNotFoundException("Username " + username + "Not found"));
 
-        return new org.springframework.security.core.userdetails
-                .User(
-                        domainUser.getUsername(),
-                        domainUser.getPassword(),
-                        domainUser.getEnabled(),
-                        domainUser.getAccountNonExpired(),
-                        domainUser.getCredentialsNonExpired(),
-                        domainUser.getAccountNonLocked(),
-                        getConvertedAuthorities(domainUser.getAuthorities()));
+//        return new org.springframework.security.core.userdetails
+//                .User(
+//                        domainUser.getUsername(),
+//                        domainUser.getPassword(),
+//                        domainUser.getEnabled(),
+//                        domainUser.getAccountNonExpired(),
+//                        domainUser.getCredentialsNonExpired(),
+//                        domainUser.getAccountNonLocked(),
+//                        getConvertedAuthorities(domainUser.getAuthorities()));
+
+        return  domainUser;
     }
 
-    private Set<GrantedAuthority> getConvertedAuthorities(Set<Authority> authorities) {
-        return (authorities == null || authorities.size() == 0) ? new HashSet<>() :
-                authorities.stream()
-                        .map(Authority::getPermission)
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toSet());
-    }
+//    private Set<GrantedAuthority> getConvertedAuthorities(Set<Authority> authorities) {
+//        return (authorities == null || authorities.size() == 0) ? new HashSet<>() :
+//                authorities.stream()
+//                        .map(Authority::getPermission)
+//                        .map(SimpleGrantedAuthority::new)
+//                        .collect(Collectors.toSet());
+//    }
 }

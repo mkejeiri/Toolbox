@@ -34,3 +34,71 @@ here we add drink order authorithy and update the roles
 
 ```
 
+
+### use domain User as customer spring security user
+
+**domain** `User` need to **implement** `UserDetails` and `CredentialsContainer`.
+
+[User class](src/main/java/com/elearning/drink/drinkfactory/domain/User.java)
+
+```java
+public class User implements UserDetails, CredentialsContainer {
+...
+
+@Transient
+    public Set<GrantedAuthority> getAuthorities() {
+        return this.roles.stream()
+                .map(Role::getAuthorities)
+                .flatMap(Set::stream)
+                .map(authority -> {
+                    return new SimpleGrantedAuthority(authority.getPermission());
+                })
+                .collect(Collectors.toSet());
+    }
+    @Override
+    public void eraseCredentials() {
+        this.password = null;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return this.accountNonExpired;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return this.accountNonLocked;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return this.credentialsNonExpired;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+...
+
+}
+
+```
+
+We 're not doing a **type conversion** to **user** provided by **Spring Security**, because we are **implementing** that **type natively** through **User** class. We need to **adjust** `JpaUserDetailsService` **class** accordingly:
+
+```java
+public class JpaUserDetailsService implements UserDetailsService {
+	private final UserRepository userRepository;
+	@Override
+    @Transactional
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        
+        User domainUser = userRepository.findByUsername(username).orElseThrow(() ->
+                new UsernameNotFoundException("Username " + username + "Not found"));
+        return  domainUser;
+    }
+}
+```
+
+
