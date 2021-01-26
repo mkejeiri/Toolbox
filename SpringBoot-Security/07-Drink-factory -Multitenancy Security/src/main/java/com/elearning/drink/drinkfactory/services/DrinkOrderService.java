@@ -17,4 +17,3 @@ public interface DrinkOrderService {
 
     void pickupOrder(UUID customerId, UUID orderId);
 }
-    
