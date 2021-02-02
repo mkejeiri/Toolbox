@@ -20,7 +20,7 @@ import java.util.Set;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
+//@Component
 public class UserDataLoader implements ApplicationListener<ContextRefreshedEvent> {
     private final AuthorityRepository authorityRepository;
     private final RoleRepository roleRepository;

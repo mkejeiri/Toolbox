@@ -33,8 +33,12 @@ here we add drink order authorithy and update the roles
 ...
 
 ```
+----------
 
+`@RestController` **annotation** tells Spring that all **handler methods** in the **controller** should have their return **value written** directly to the **body of the response**, rather than being carried in the **model** to a **view** for **rendering**.
+If we set `@Controller` **annotation for Spring MVC controller**, we need also **annotate** all of the **handler methods** with `@ResponseBody` to achieve the same result. Yet **another option** would be to return a `ResponseEntity` object.
 
+----------
 ### use domain User as custom spring security user
 
 **domain** `User` need to **implement** `UserDetails` and `CredentialsContainer`.
@@ -104,9 +108,73 @@ public class JpaUserDetailsService implements UserDetailsService {
 
 ### Link Customer to user 
 
-We link customer to user and indirectly to role, it more cleaner approach. We also refactored `DefaultDrinkLoader`  class and merge `UserDataLoader` class into it.
+We link **customer to user** and indirectly to **role**, it more **cleaner approach**. We also refactored `DefaultDrinkLoader`  class and merge `UserDataLoader` class into it.
 
 
+### Custom Authentication Manager
+
+**Customer** can only acts on **their orders** :
+- For **AuthenticationManager** we don't need to implement a specific **interface** at any old Spring bean.
+- We are using the flexibility that we have within Spring Security in the Spring Framework as far as how it interacts with the **Spring Expression Language**. 
+- Create a method **customerIdMatches** to **verify** that the **customerid** matches and return back a true or false.
+
+```java
+package com.elearning.drink.drinkfactory.security;
+
+import com.elearning.drink.drinkfactory.domain.User;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.Authentication;
+
+import java.util.UUID;
+
+@Configuration
+@Slf4j
+public class DrinkOrderAuthenticationManager {
+    public boolean customerIdMatches(Authentication authentication, UUID customerId) {
+        User authenticatedUser = (User) authentication.getPrincipal();
+        log.debug("Authentication User customerId: " + authenticatedUser.getCustomer().getId().toString() +
+                "  Customer Id: " + customerId.toString());
+        return customerId.equals(authenticatedUser.getCustomer().getId());
+    }
+}
+```
+
+We need to set the **Spring Expression Language** on the **controller methods** :
+
+```java
+    @PreAuthorize("hasAuthority('order.create') OR " +
+            "hasAuthority('customer.order.create') AND" +
+            //DrinkOrderAuthenticationManager Spring components is referenced on that Spring context.
+            //So instructing Spring Security to pass in the authentication object and the customerId into this method.
+            "@drinkOrderAuthenticationManager.customerIdMatches(authentication, #customerId)")
+    @PostMapping("orders")
+    @ResponseStatus(HttpStatus.CREATED)
+    public DrinkOrderDto placeOrder(@PathVariable("customerId") UUID customerId, @RequestBody DrinkOrderDto drinkOrderDto) {
+        return drinkOrderService.placeOrder(customerId, drinkOrderDto);
+    }
+```
+
+
+**Testing UserDetails for the STPETE_USER** :
+
+```java
+ @WithUserDetails(DefaultDrinkLoader.STPETE_USER)
+    @Test
+    void createOrderUserAuthCustomer() throws Exception {
+        DrinkOrderDto drinkOrderDto = buildOrderDto(stPeteCustomer, loadedDrinks.get(0).getId());
+
+        mockMvc.perform(post(API_ROOT + stPeteCustomer.getId() + "/orders")
+                .accept(MediaType.APPLICATION_JSON)
+                .characterEncoding("UTF-8")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(drinkOrderDto)))
+                .andExpect(status().isCreated());
+    }
+```
+
+Underneath the covers, **Spring Security will authenticate the user** (i.e. `@WithUserDetails(DefaultDrinkLoader.STPETE_USER)`), so we don't have to use **HTTP basic** and to provide the **user credentials**  inside the test itself.
+We're **instructing**  the **test environment**  to execute the test with the **Spring Security Context**  for that specific **user**  (i.e. STPETE_USER). Also a very good approach to have when we use more than **one authentication method**  or maybe that **authentication method**  is going to **change**  somewhere down the road.
 
 
 

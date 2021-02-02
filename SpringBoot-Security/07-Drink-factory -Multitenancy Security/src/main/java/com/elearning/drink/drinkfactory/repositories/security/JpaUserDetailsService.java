@@ -28,10 +28,10 @@ public class JpaUserDetailsService implements UserDetailsService {
         //since getAuthorities is lazy loaded, we ran into transactional problem
         //when we try to load authorities outside the transaction scope-> Hence the need to use '@Transactional'
         //Another solution would be, to eagerly load authorities and to avoid a round trip to the db!
-        User domainUser = userRepository.findByUsername(username).orElseThrow(() ->
+      return  userRepository.findByUsername(username).orElseThrow(() ->
                 new UsernameNotFoundException("Username " + username + "Not found"));
 
-        return new org.springframework.security.core.userdetails
+       /* return new org.springframework.security.core.userdetails
                 .User(
                         domainUser.getUsername(),
                         domainUser.getPassword(),
@@ -39,14 +39,14 @@ public class JpaUserDetailsService implements UserDetailsService {
                         domainUser.getAccountNonExpired(),
                         domainUser.getCredentialsNonExpired(),
                         domainUser.getAccountNonLocked(),
-                        getConvertedAuthorities(domainUser.getAuthorities()));
+                        getConvertedAuthorities(domainUser.getAuthorities()));*/
     }
 
-    private Set<GrantedAuthority> getConvertedAuthorities(Set<Authority> authorities) {
+   /* private Set<GrantedAuthority> getConvertedAuthorities(Set<Authority> authorities) {
         return (authorities == null || authorities.size() == 0) ? new HashSet<>() :
                 authorities.stream()
                         .map(Authority::getPermission)
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toSet());
-    }
+    }*/
 }

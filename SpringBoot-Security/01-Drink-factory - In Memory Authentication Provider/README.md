@@ -2,6 +2,13 @@
 
 This repository contains source code examples used to support Spring Security Core.
 
+----------
+
+`@RestController` **annotation** tells Spring that all **handler methods** in the **controller** should have their return **value written** directly to the **body of the response**, rather than being carried in the **model** to a **view** for **rendering**.
+If we set `@Controller` **annotation for Spring MVC controller**, we need also **annotate** all of the **handler methods** with `@ResponseBody` to achieve the same result. Yet **another option** would be to return a `ResponseEntity` object.
+
+----------
+
 #### Difference between `/api/v1/user/*` and `/api/v1/user/**`?
 
 `/api/v1/user/*` - will match any value, up to another "/"
