@@ -4,10 +4,10 @@ import com.elearning.drink.drinkfactory.repositories.CustomerRepository;
 import com.elearning.drink.drinkfactory.repositories.DrinkInventoryRepository;
 import com.elearning.drink.drinkfactory.repositories.DrinkRepository;
 import com.elearning.drink.drinkfactory.services.BreweryService;
+import com.elearning.drink.drinkfactory.services.DrinkOrderService;
 import com.elearning.drink.drinkfactory.services.DrinkService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -30,6 +30,9 @@ public class IndexControllerIT extends  BaseIT{
 
     @MockBean
     DrinkService drinkService;
+
+    @MockBean
+    DrinkOrderService drinkOrderService;
     @Test
     void testGetIndexSlash() throws Exception{
         mockMvc.perform(get("/" ))

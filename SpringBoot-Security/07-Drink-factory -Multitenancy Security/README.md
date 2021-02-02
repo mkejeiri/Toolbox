@@ -141,11 +141,11 @@ public class DrinkOrderAuthenticationManager {
 ```
 
 We need to set the **Spring Expression Language** on the **controller methods** :
-
+ 
 ```java
     @PreAuthorize("hasAuthority('order.create') OR " +
             "hasAuthority('customer.order.create') AND" +
-            //DrinkOrderAuthenticationManager Spring components is referenced on that Spring context.
+            //@drinkOrderAuthenticationManager's referencing DrinkOrderAuthenticationManager Spring components on that Spring context.
             //So instructing Spring Security to pass in the authentication object and the customerId into this method.
             "@drinkOrderAuthenticationManager.customerIdMatches(authentication, #customerId)")
     @PostMapping("orders")
@@ -154,7 +154,7 @@ We need to set the **Spring Expression Language** on the **controller methods** 
         return drinkOrderService.placeOrder(customerId, drinkOrderDto);
     }
 ```
-
+Note that we use `@drinkOrderAuthenticationManager` to reference the **DrinkOrderAuthenticationManager bean** and `#customerId` to reference the **PathVariable** property.
 
 **Testing UserDetails for the STPETE_USER** :
 

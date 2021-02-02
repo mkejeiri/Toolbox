@@ -1,14 +1,13 @@
 package com.elearning.drink.drinkfactory.web.controllers.api;
 
-import com.elearning.drink.drinkfactory.security.perms.DrinkCreatePermission;
-import com.elearning.drink.drinkfactory.security.perms.DrinkOrderReadPermission;
-import com.elearning.drink.drinkfactory.security.perms.DrinkOrderUpdatePermission;
+import com.elearning.drink.drinkfactory.security.perms.CustomerAndOrderCreatePermission;
+import com.elearning.drink.drinkfactory.security.perms.CustomerAndOrderReadPermission;
+import com.elearning.drink.drinkfactory.security.perms.CustomerAndOrderUpdatePermission;
 import com.elearning.drink.drinkfactory.services.DrinkOrderService;
 import com.elearning.drink.drinkfactory.web.model.DrinkOrderDto;
 import com.elearning.drink.drinkfactory.web.model.DrinkOrderPagedList;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -26,11 +25,7 @@ public class DrinkOrderController {
         this.drinkOrderService = drinkOrderService;
     }
 
-    @PreAuthorize("hasAuthority('order.read') OR " +
-            "hasAuthority('customer.order.read') AND" +
-            //DrinkOrderAuthenticationManager Spring components is referenced on that Spring context.
-            //So instructing Spring Security to pass in the authentication object and the customerId into this method.
-            "@drinkOrderAuthenticationManager.customerIdMatches(authentication, #customerId)")
+    @CustomerAndOrderReadPermission
     @GetMapping("orders")
     public DrinkOrderPagedList listOrders(@PathVariable("customerId") UUID customerId,
                                           @RequestParam(value = "pageNumber", required = false) Integer pageNumber,
@@ -47,32 +42,20 @@ public class DrinkOrderController {
         return drinkOrderService.listOrders(customerId, PageRequest.of(pageNumber, pageSize));
     }
 
-    @PreAuthorize("hasAuthority('order.create') OR " +
-            "hasAuthority('customer.order.create') AND" +
-            //DrinkOrderAuthenticationManager Spring components is referenced on that Spring context.
-            //So instructing Spring Security to pass in the authentication object and the customerId into this method.
-            "@drinkOrderAuthenticationManager.customerIdMatches(authentication, #customerId)")
+    @CustomerAndOrderCreatePermission
     @PostMapping("orders")
     @ResponseStatus(HttpStatus.CREATED)
     public DrinkOrderDto placeOrder(@PathVariable("customerId") UUID customerId, @RequestBody DrinkOrderDto drinkOrderDto) {
         return drinkOrderService.placeOrder(customerId, drinkOrderDto);
     }
 
-    @PreAuthorize("hasAuthority('order.read') OR " +
-            "hasAuthority('customer.order.read') AND" +
-            //DrinkOrderAuthenticationManager Spring components is referenced on that Spring context.
-            //So instructing Spring Security to pass in the authentication object and the customerId into this method.
-            "@drinkOrderAuthenticationManager.customerIdMatches(authentication, #customerId)")
+    @CustomerAndOrderReadPermission
     @GetMapping("orders/{orderId}")
     public DrinkOrderDto getOrder(@PathVariable("customerId") UUID customerId, @PathVariable("orderId") UUID orderId) {
         return drinkOrderService.getOrderById(customerId, orderId);
     }
 
-    @PreAuthorize("hasAuthority('order.update') OR " +
-            "hasAuthority('customer.order.update') AND" +
-            //DrinkOrderAuthenticationManager Spring components is referenced on that Spring context.
-            //So instructing Spring Security to pass in the authentication object and the customerId into this method.
-            "@drinkOrderAuthenticationManager.customerIdMatches(authentication, #customerId)")
+    @CustomerAndOrderUpdatePermission
     @PutMapping("/orders/{orderId}/pickup")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void pickupOrder(@PathVariable("customerId") UUID customerId, @PathVariable("orderId") UUID orderId) {
