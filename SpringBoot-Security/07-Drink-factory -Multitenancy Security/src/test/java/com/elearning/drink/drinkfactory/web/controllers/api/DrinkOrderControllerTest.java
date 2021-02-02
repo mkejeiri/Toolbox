@@ -3,6 +3,7 @@ package com.elearning.drink.drinkfactory.web.controllers.api;
 import com.elearning.drink.drinkfactory.bootstrap.DefaultDrinkLoader;
 import com.elearning.drink.drinkfactory.domain.Customer;
 import com.elearning.drink.drinkfactory.domain.Drink;
+import com.elearning.drink.drinkfactory.domain.DrinkOrder;
 import com.elearning.drink.drinkfactory.repositories.CustomerRepository;
 import com.elearning.drink.drinkfactory.repositories.DrinkOrderRepository;
 import com.elearning.drink.drinkfactory.repositories.DrinkRepository;
@@ -11,19 +12,18 @@ import com.elearning.drink.drinkfactory.web.model.DrinkOrderDto;
 import com.elearning.drink.drinkfactory.web.model.DrinkOrderLineDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 
+import javax.transaction.Transactional;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -74,6 +74,12 @@ class DrinkOrderControllerTest extends BaseIT {
                 .andExpect(status().isUnauthorized());
     }
 
+    //UserDetails for the STPETE_USER : underneath the covers,
+//Spring Security will authenticate the user, so we don't have to use HTTP basic,
+//We don't have to provide the user credentials inside the test itself.
+//We're instructing the test environment to execute this test with the Spring Security
+//Context for that specific user (i.e. STPETE_USER). Also a very good approach to have when we use more than
+//one authentication method or maybe that authentication method is going to change somewhere down the road.
     @WithUserDetails("admin")
     @Test
     void createOrderUserAdmin() throws Exception {
@@ -86,12 +92,7 @@ class DrinkOrderControllerTest extends BaseIT {
                 .content(objectMapper.writeValueAsString(drinkOrderDto)))
                 .andExpect(status().isCreated());
     }
-//UserDetails for the STPETE_USER : underneath the covers,
-//Spring Security will authenticate the user, so we don't have to use HTTP basic,
-//We don't have to provide the user credentials inside the test itself.
-//We're instructing the test environment to execute this test with the Spring Security
-//Context for that specific user (i.e. STPETE_USER). Also a very good approach to have when we use more than
-//one authentication method or maybe that authentication method is going to change somewhere down the road.
+
     @WithUserDetails(DefaultDrinkLoader.STPETE_USER)
     @Test
     void createOrderUserAuthCustomer() throws Exception {
@@ -152,24 +153,83 @@ class DrinkOrderControllerTest extends BaseIT {
                 .andExpect(status().isUnauthorized());
     }
 
-    @Disabled
+    @Transactional
     @Test
-    void pickUpOrderNotAuth() {
+    void getByOrderIdNotAuth() throws Exception {
+        DrinkOrder drinkOrder = stPeteCustomer.getDrinkOrders().stream().findFirst().orElseThrow();
+
+        mockMvc.perform(get(API_ROOT + stPeteCustomer.getId() + "/orders/" + drinkOrder.getId()))
+                .andExpect(status().isUnauthorized());
     }
 
-    @Disabled
+    @Transactional
+    @WithUserDetails("admin")
     @Test
-    void pickUpOrderNotAdminUser() {
+    void getByOrderIdADMIN() throws Exception {
+        DrinkOrder drinkOrder = stPeteCustomer.getDrinkOrders().stream().findFirst().orElseThrow();
+
+        mockMvc.perform(get(API_ROOT + stPeteCustomer.getId() + "/orders/" + drinkOrder.getId()))
+                .andExpect(status().is2xxSuccessful());
     }
 
-    @Disabled
+    @Transactional
+    @WithUserDetails(DefaultDrinkLoader.STPETE_USER)
     @Test
-    void pickUpOrderCustomerUserAUTH() {
+    void getByOrderIdCustomerAuth() throws Exception {
+        DrinkOrder drinkOrder = stPeteCustomer.getDrinkOrders().stream().findFirst().orElseThrow();
+
+        mockMvc.perform(get(API_ROOT + stPeteCustomer.getId() + "/orders/" + drinkOrder.getId()))
+                .andExpect(status().is2xxSuccessful());
     }
 
-    @Disabled
+    @Transactional
+    @WithUserDetails(DefaultDrinkLoader.DUNEDIN_USER)
     @Test
-    void pickUpOrderCustomerUserNOT_AUTH() {
+    void getByOrderIdCustomerNOTAuth() throws Exception {
+        DrinkOrder drinkOrder = stPeteCustomer.getDrinkOrders().stream().findFirst().orElseThrow();
+
+        mockMvc.perform(get(API_ROOT + stPeteCustomer.getId() + "/orders/" + drinkOrder.getId()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Transactional
+    @Test
+    void pickUpOrderNotAuth() throws Exception {
+        DrinkOrder drinkOrder = stPeteCustomer.getDrinkOrders().stream().findFirst().orElseThrow();
+
+        mockMvc.perform(put(API_ROOT + stPeteCustomer.getId() + "/orders/" + drinkOrder.getId() + "/pickup"))
+                .andExpect(status().isUnauthorized());
+
+    }
+
+    @Transactional
+    @WithUserDetails("admin")
+    @Test
+    void pickUpOrderAdminUser() throws Exception {
+        DrinkOrder drinkOrder = stPeteCustomer.getDrinkOrders().stream().findFirst().orElseThrow();
+
+        mockMvc.perform(put(API_ROOT + stPeteCustomer.getId() + "/orders/" + drinkOrder.getId() + "/pickup"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Transactional
+    @WithUserDetails(DefaultDrinkLoader.STPETE_USER)
+    @Test
+    void pickUpOrderCustomerUserAUTH() throws Exception {
+        DrinkOrder drinkOrder = stPeteCustomer.getDrinkOrders().stream().findFirst().orElseThrow();
+
+        mockMvc.perform(put(API_ROOT + stPeteCustomer.getId() + "/orders/" + drinkOrder.getId() + "/pickup"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Transactional
+    @WithUserDetails(DefaultDrinkLoader.DUNEDIN_USER)
+    @Test
+    void pickUpOrderCustomerUserNOT_AUTH() throws Exception {
+        DrinkOrder drinkOrder = stPeteCustomer.getDrinkOrders().stream().findFirst().orElseThrow();
+
+        mockMvc.perform(put(API_ROOT + stPeteCustomer.getId() + "/orders/" + drinkOrder.getId() + "/pickup"))
+                .andExpect(status().isForbidden());
     }
 
     private DrinkOrderDto buildOrderDto(Customer customer, UUID drinkId) {

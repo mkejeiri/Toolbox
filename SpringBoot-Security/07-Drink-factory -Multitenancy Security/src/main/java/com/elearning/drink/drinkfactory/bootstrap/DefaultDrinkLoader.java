@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+
 @Slf4j
 @RequiredArgsConstructor
 @Component
@@ -50,6 +51,7 @@ public class DefaultDrinkLoader implements CommandLineRunner {
         loadTastingRoomData();
         loadCustomerData();
     }
+
     private void loadTastingRoomData() {
         Customer tastingRoom = Customer.builder()
                 .customerName(TASTING_ROOM)
@@ -94,10 +96,14 @@ public class DefaultDrinkLoader implements CommandLineRunner {
         Authority readOrder = authorityRepository.save(Authority.builder().permission("order.read").build());
         Authority updateOrder = authorityRepository.save(Authority.builder().permission("order.update").build());
         Authority deleteOrder = authorityRepository.save(Authority.builder().permission("order.delete").build());
+        Authority pickUpOrder = authorityRepository.save(Authority.builder().permission("order.pickup").build());
+
+        //Customer order
         Authority createOrderCustomer = authorityRepository.save(Authority.builder().permission("customer.order.create").build());
         Authority readOrderCustomer = authorityRepository.save(Authority.builder().permission("customer.order.read").build());
         Authority updateOrderCustomer = authorityRepository.save(Authority.builder().permission("customer.order.update").build());
         Authority deleteOrderCustomer = authorityRepository.save(Authority.builder().permission("customer.order.delete").build());
+        Authority pickUpOrderCustomer = authorityRepository.save(Authority.builder().permission("customer.order.pickup").build());
 
         Role adminRole = roleRepository.save(Role.builder().name("ADMIN").build());
         Role customerRole = roleRepository.save(Role.builder().name("CUSTOMER").build());
@@ -105,10 +111,10 @@ public class DefaultDrinkLoader implements CommandLineRunner {
 
         adminRole.setAuthorities(new HashSet<>(Set.of(createDrink, updateDrink, readDrink, deleteDrink, createCustomer, readCustomer,
                 updateCustomer, deleteCustomer, createBrewery, readBrewery, updateBrewery, deleteBrewery,
-                createOrder, readOrder, updateOrder, deleteOrder)));
+                createOrder, readOrder, updateOrder, deleteOrder, pickUpOrder)));
 
         customerRole.setAuthorities(new HashSet<>(Set.of(readDrink, readCustomer, readBrewery, createOrderCustomer, readOrderCustomer,
-                updateOrderCustomer, deleteOrderCustomer)));
+                updateOrderCustomer, deleteOrderCustomer, pickUpOrderCustomer)));
 
         userRole.setAuthorities(new HashSet<>(Set.of(readDrink)));
 
@@ -135,6 +141,7 @@ public class DefaultDrinkLoader implements CommandLineRunner {
         log.debug("Users Loaded: " + userRepository.count());
 
     }
+
     private void loadCustomerData() {
         Role customerRole = roleRepository.findByName("CUSTOMER").orElseThrow();
 
@@ -188,7 +195,6 @@ public class DefaultDrinkLoader implements CommandLineRunner {
                         .build()))
                 .build());
     }
-
 
 
     private void loadBreweryData() {

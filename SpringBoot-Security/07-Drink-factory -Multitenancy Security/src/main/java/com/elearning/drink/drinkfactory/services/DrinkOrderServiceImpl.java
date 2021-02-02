@@ -86,17 +86,30 @@ public class DrinkOrderServiceImpl implements DrinkOrderService {
         drinkOrderRepository.save(drinkOrder);
     }
 
-    private DrinkOrder getOrder(UUID customerId, UUID orderId){
+    @Override
+    public DrinkOrderPagedList listOrders(Pageable pageable) {
+        Page<DrinkOrder> drinkOrderPage = drinkOrderRepository.findAll(pageable);
+        return new DrinkOrderPagedList(drinkOrderPage
+                .stream()
+                .map(drinkOrderMapper::drinkOrderToDto)
+                .collect(Collectors.toList()), PageRequest.of(
+                drinkOrderPage.getPageable().getPageNumber(),
+                drinkOrderPage.getPageable().getPageSize()),
+                drinkOrderPage.getTotalElements());
+
+    }
+
+    private DrinkOrder getOrder(UUID customerId, UUID orderId) {
         Optional<Customer> customerOptional = customerRepository.findById(customerId);
 
-        if(customerOptional.isPresent()){
+        if (customerOptional.isPresent()) {
             Optional<DrinkOrder> drinkOrderOptional = drinkOrderRepository.findById(orderId);
 
-            if(drinkOrderOptional.isPresent()){
+            if (drinkOrderOptional.isPresent()) {
                 DrinkOrder drinkOrder = drinkOrderOptional.get();
 
                 // fall to exception if customer id's do not match - order not for customer
-                if(drinkOrder.getCustomer().getId().equals(customerId)){
+                if (drinkOrder.getCustomer().getId().equals(customerId)) {
                     return drinkOrder;
                 }
             }

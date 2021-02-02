@@ -118,6 +118,9 @@ We link **customer to user** and indirectly to **role**, it more **cleaner appro
 - We are using the flexibility that we have within Spring Security in the Spring Framework as far as how it interacts with the **Spring Expression Language**. 
 - Create a method **customerIdMatches** to **verify** that the **customerid** matches and return back a true or false.
 
+The **purpose** of writing a custom **authentication manager** is to **extract** the **customer** from the **Authentication** and **compare** it to the `customerId` being requested.
+
+
 ```java
 package com.elearning.drink.drinkfactory.security;
 
@@ -177,6 +180,57 @@ Underneath the covers, **Spring Security will authenticate the user** (i.e. `@Wi
 We're **instructing**  the **test environment**  to execute the test with the **Spring Security Context**  for that specific **user**  (i.e. STPETE_USER). Also a very good approach to have when we use more than **one authentication method**  or maybe that **authentication method**  is going to **change**  somewhere down the road.
 
 
+
+Create a new permission for Pickup order
+---------
+The Pickup order action is not a typical **CRUD** type **action**. It's an **API action**, thus **best practice** would be to **define** a **permission** for the **action**.
+
+and also we create a new `DrinkOrderControllerV2`: 
+
+```java
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/v2/orders/")
+public class DrinkOrderControllerV2 {
+
+    private static final Integer DEFAULT_PAGE_NUMBER = 0;
+    private static final Integer DEFAULT_PAGE_SIZE = 25;
+
+    private final DrinkOrderService drinkOrderService;
+
+    @DrinkOrderReadV2Permission
+    @GetMapping
+    public DrinkOrderPagedList listOrders(@AuthenticationPrincipal User user,
+                                          @RequestParam(value = "pageNumber", required = false) Integer pageNumber,
+                                          @RequestParam(value = "pageSize", required = false) Integer pageSize){
+
+        if (pageNumber == null || pageNumber < 0){
+            pageNumber = DEFAULT_PAGE_NUMBER;
+        }
+
+        if (pageSize == null || pageSize < 1) {
+            pageSize = DEFAULT_PAGE_SIZE;
+        }
+
+        if (user.getCustomer() != null) {
+            return drinkOrderService.listOrders(user.getCustomer().getId(), PageRequest.of(pageNumber, pageSize));
+        } else {
+            return drinkOrderService.listOrders(PageRequest.of(pageNumber, pageSize));
+        }
+    }
+
+    @DrinkOrderReadV2Permission
+    @GetMapping("orders/{orderId}")
+    public DrinkOrderDto getOrder(@PathVariable("orderId") UUID orderId){
+
+        return null;
+        //  return drinkOrderService.getOrderById(orderId);
+    }
+}
+```
+
+
+There is no way for us to specify a different **UserId**, at least not **programmatically** from the **Web interface**, on the **controller**, we **fetch** listOrders based on **authenticated** user coming from **Spring Security**, i.e. coming from the **Security Context** of the **logged in user**.
 
 
 

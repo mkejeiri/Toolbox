@@ -1,8 +1,8 @@
 package com.elearning.drink.drinkfactory.web.controllers.api;
 
 import com.elearning.drink.drinkfactory.security.perms.CustomerAndOrderCreatePermission;
+import com.elearning.drink.drinkfactory.security.perms.CustomerAndOrderPickupPermission;
 import com.elearning.drink.drinkfactory.security.perms.CustomerAndOrderReadPermission;
-import com.elearning.drink.drinkfactory.security.perms.CustomerAndOrderUpdatePermission;
 import com.elearning.drink.drinkfactory.services.DrinkOrderService;
 import com.elearning.drink.drinkfactory.web.model.DrinkOrderDto;
 import com.elearning.drink.drinkfactory.web.model.DrinkOrderPagedList;
@@ -55,7 +55,7 @@ public class DrinkOrderController {
         return drinkOrderService.getOrderById(customerId, orderId);
     }
 
-    @CustomerAndOrderUpdatePermission
+    @CustomerAndOrderPickupPermission
     @PutMapping("/orders/{orderId}/pickup")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void pickupOrder(@PathVariable("customerId") UUID customerId, @PathVariable("orderId") UUID orderId) {

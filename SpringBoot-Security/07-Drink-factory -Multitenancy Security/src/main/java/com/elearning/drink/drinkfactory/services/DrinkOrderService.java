@@ -16,4 +16,6 @@ public interface DrinkOrderService {
     DrinkOrderDto getOrderById(UUID customerId, UUID orderId);
 
     void pickupOrder(UUID customerId, UUID orderId);
+
+    DrinkOrderPagedList listOrders(Pageable pageable);
 }
