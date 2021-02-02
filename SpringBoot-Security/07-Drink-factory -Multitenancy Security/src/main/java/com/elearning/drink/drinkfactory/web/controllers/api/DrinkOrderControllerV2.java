@@ -6,12 +6,16 @@ import com.elearning.drink.drinkfactory.services.DrinkOrderService;
 import com.elearning.drink.drinkfactory.web.model.DrinkOrderDto;
 import com.elearning.drink.drinkfactory.web.model.DrinkOrderPagedList;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v2/orders/")
@@ -26,9 +30,9 @@ public class DrinkOrderControllerV2 {
     @GetMapping
     public DrinkOrderPagedList listOrders(@AuthenticationPrincipal User user,
                                           @RequestParam(value = "pageNumber", required = false) Integer pageNumber,
-                                          @RequestParam(value = "pageSize", required = false) Integer pageSize){
+                                          @RequestParam(value = "pageSize", required = false) Integer pageSize) {
 
-        if (pageNumber == null || pageNumber < 0){
+        if (pageNumber == null || pageNumber < 0) {
             pageNumber = DEFAULT_PAGE_NUMBER;
         }
 
@@ -44,10 +48,11 @@ public class DrinkOrderControllerV2 {
     }
 
     @DrinkOrderReadV2Permission
-    @GetMapping("orders/{orderId}")
-    public DrinkOrderDto getOrder(@PathVariable("orderId") UUID orderId){
-
-        return null;
-        //  return drinkOrderService.getOrderById(orderId);
+    @GetMapping("{orderId}")
+    public DrinkOrderDto getOrder(@PathVariable("orderId") UUID orderId) {
+        DrinkOrderDto drinkOrderDto = drinkOrderService.getOrderById(orderId);
+        if (drinkOrderDto == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
+        log.debug("drinkOrder found " + drinkOrderDto);
+        return drinkOrderDto;
     }
 }

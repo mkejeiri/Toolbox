@@ -99,6 +99,12 @@ public class DrinkOrderServiceImpl implements DrinkOrderService {
 
     }
 
+    @Override
+    public DrinkOrderDto getOrderById(UUID orderId) {
+        DrinkOrder drinkOrder = drinkOrderRepository.findOrderSecureById(orderId);
+        return drinkOrderMapper.drinkOrderToDto(drinkOrder);
+    }
+
     private DrinkOrder getOrder(UUID customerId, UUID orderId) {
         Optional<Customer> customerOptional = customerRepository.findById(customerId);
 

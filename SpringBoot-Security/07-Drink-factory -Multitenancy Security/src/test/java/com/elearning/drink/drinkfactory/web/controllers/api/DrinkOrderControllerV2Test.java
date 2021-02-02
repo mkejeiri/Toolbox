@@ -10,7 +10,6 @@ import com.elearning.drink.drinkfactory.repositories.DrinkRepository;
 import com.elearning.drink.drinkfactory.web.controllers.BaseIT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -79,7 +78,7 @@ class DrinkOrderControllerV2Test extends BaseIT {
     }
 
 
-    @Disabled
+//    @Disabled
     @Transactional
     @Test
     void getByOrderIdNotAuth() throws Exception {
@@ -89,7 +88,7 @@ class DrinkOrderControllerV2Test extends BaseIT {
                 .andExpect(status().isUnauthorized());
     }
 
-    @Disabled
+//    @Disabled
     @Transactional
     @WithUserDetails("admin")
     @Test
@@ -100,7 +99,7 @@ class DrinkOrderControllerV2Test extends BaseIT {
                 .andExpect(status().is2xxSuccessful());
     }
 
-    @Disabled
+//    @Disabled
     @Transactional
     @WithUserDetails(DefaultDrinkLoader.STPETE_USER)
     @Test
@@ -111,7 +110,7 @@ class DrinkOrderControllerV2Test extends BaseIT {
                 .andExpect(status().is2xxSuccessful());
     }
 
-    @Disabled
+    //    @Disabled
     @Transactional
     @WithUserDetails(DefaultDrinkLoader.DUNEDIN_USER)
     @Test
@@ -119,6 +118,6 @@ class DrinkOrderControllerV2Test extends BaseIT {
         DrinkOrder drinkOrder = stPeteCustomer.getDrinkOrders().stream().findFirst().orElseThrow();
 
         mockMvc.perform(get(API_ROOT + drinkOrder.getId()))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isNotFound());
     }
 }

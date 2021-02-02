@@ -234,3 +234,93 @@ There is no way for us to specify a different **UserId**, at least not **program
 
 
 
+
+
+Spring Security with Spring Data JPA
+------------
+add the dependency :
+
+```xml
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>	
+```
+Add the **SecurityEvaluationContextExtension** which allows **Spring Security** to be used with **Spring Data**, **Spring Expression language** or **SPel** expression.
+
+
+```java
+@Configuration
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    // needed for use with Spring Data JPA SPeL
+    @Bean
+    public SecurityEvaluationContextExtension securityEvaluationContextExtension() {
+        return new SecurityEvaluationContextExtension();
+    }
+...
+```
+
+And this **hibernate query** (aka **named query**) to `findOrderSecureById`.
+
+Within that query, we are using two different features of Spring Security:
+- hasAuthority with **SPel** expression
+- if the order customer id equals the principal customerId,  where principal object comes from the Spring Security Context.
+
+
+```java
+public interface DrinkOrderRepository extends JpaRepository<DrinkOrder, UUID> {
+
+    Page<DrinkOrder> findAllByCustomer(Customer customer, Pageable pageable);
+
+    List<DrinkOrder> findAllByOrderStatus(OrderStatusEnum orderStatusEnum);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    DrinkOrder findOneById(UUID id);
+    
+    @Query("select o from DrinkOrder o where o.id =?1 and " +
+            "(true = :#{hasAuthority('order.read')} or o.customer.id = ?#{principal?.customer?.id})")
+    DrinkOrder findOrderSecureById(UUID orderId);
+}
+
+```
+
+
+
+Return a drinkOrderDto found or NOT_FOUND, i.e `throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found")`.  
+
+```java
+@Slf4j
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/v2/orders/")
+public class DrinkOrderControllerV2 {
+
+    private static final Integer DEFAULT_PAGE_NUMBER = 0;
+    private static final Integer DEFAULT_PAGE_SIZE = 25;
+
+    private final DrinkOrderService drinkOrderService;
+    @DrinkOrderReadV2Permission
+    @GetMapping("{orderId}")
+    public DrinkOrderDto getOrder(@PathVariable("orderId") UUID orderId) {
+        DrinkOrderDto drinkOrderDto = drinkOrderService.getOrderById(orderId);
+        if (drinkOrderDto == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
+        log.debug("drinkOrder found " + drinkOrderDto);
+        return drinkOrderDto;
+    }
+...
+```
+
+Check **sql** out from **hibernate** by adding the following into **properties** file:
+
+```properties
+#show sql
+spring.jpa.properties.hibernate.show_sql=true
+#pretty format SQL
+spring.jpa.properties.hibernate.format_sql=true
+#show bind parameters
+logging.level.org.hibernate.type.descriptor.sql=trace
+```
+

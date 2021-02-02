@@ -18,4 +18,6 @@ public interface DrinkOrderService {
     void pickupOrder(UUID customerId, UUID orderId);
 
     DrinkOrderPagedList listOrders(Pageable pageable);
+
+    DrinkOrderDto getOrderById(UUID orderId);
 }
