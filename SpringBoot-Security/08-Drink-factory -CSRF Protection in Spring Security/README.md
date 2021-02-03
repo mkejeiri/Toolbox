@@ -100,11 +100,15 @@ We are getting a **403 forbidden** rather than a **401 unauthorized**.  we will 
 **Mock MVC** is not the **Web Framework**, So if we run the **Web application**, any **forms** that we have that are posting are going to **fail** because we have not updated **CSRF Protection** yet. 
 
 
-**Browser case**
-
+Browser case
+----------
 We need to change **add/update customer** **form**  (i.e. thymeleaf template)to support **CSRF Protection**. We'd run a full blown integration test which outside the scope the browser.
 
 ` <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />`
 
+
+**Can the CSRF token be passed in something other than a hidden form field?**
+
+Yes, **Spring Security** can be **configured** to return the **CRSF token** in the **HTTP Header** or as a **cookie value**.
 
 

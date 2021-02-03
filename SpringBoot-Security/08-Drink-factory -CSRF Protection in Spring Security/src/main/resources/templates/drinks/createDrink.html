@@ -22,6 +22,8 @@
                 th:replace="~{fragments/inputField :: input ('Qty to Brew', 'quantityToBrew', 'number')}" />
         <input
                 th:replace="~{fragments/inputField :: input ('Price', 'price', 'monetory')}" />
+
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
     </div>
     <div class="form-group">
         <div class="col-sm-offset-2 col-sm-10">
