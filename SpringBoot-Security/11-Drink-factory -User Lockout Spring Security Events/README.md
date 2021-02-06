@@ -30,3 +30,65 @@ Default Event Mappings Authentication Events
 
 #### Customization of Events
 **Spring Security can be configured** for additional or **custom Authentication Events**, we could provide our own instance of **AuthenticationEventPublisher**, and it could be **customized as needed**.
+
+
+**Step 1** :  add **AuthenticationEventPublisher** `@Bean` into [SecurityConfig.java](src/main/java/com/elearning/drink/drinkfactory/config/SecurityConfig.java)
+
+
+```java
+ @Bean
+    public AuthenticationEventPublisher authenticationEventPublisher(ApplicationEventPublisher applicationEventPublisher){
+	//If we need to do customizations, we'd provide a customized instance of this.
+        return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
+    }
+```
+
+**Step 2** :  create [AuthenticationSuccessListener](src/main/java/com/elearning/drink/drinkfactory/security/AuthenticationSuccessListener.java)
+```java
+@Slf4j
+@Component
+    public class AuthenticationSuccessListener {
+
+    @EventListener
+    //registering this method as an EventListener, and spring framework will look for the @EventListener annotation,
+    //and then when we have an event with the type of AuthenticationSuccessEvent, this listen methode will get invoked.
+    public void listen(AuthenticationSuccessEvent event) {
+        log.debug("User Logged In Okay");
+    }
+}
+```
+
+#### Logging of Authentication Success Events
+
+We could use a **debugger to introspect** the type of **AuthenticationSuccessEvent** **object** that we dealing at **runtime** and then provide a logging based in that, we could log also activity into a database. 
+
+```java
+@Slf4j
+@Component
+public class AuthenticationSuccessListener {
+
+    @EventListener
+    //registering this method as an EventListener, and spring framework will look for the @EventListener annotation,
+    //and then when we have an event with the type of AuthenticationSuccessEvent, this listen methode will get invoked.
+    public void listen(AuthenticationSuccessEvent event) {
+        UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) event.getSource();
+
+        if(token.getPrincipal() instanceof User){
+            User user = (User) token.getPrincipal();
+
+            log.debug("*** User name logged in: " + user.getUsername() );
+        }
+
+        if(token.getDetails() instanceof WebAuthenticationDetails){
+            WebAuthenticationDetails details = (WebAuthenticationDetails) token.getDetails();
+
+            log.debug("*** Source IP: " + details.getRemoteAddress());
+        }
+    }
+}
+
+```
+
+
+
+
