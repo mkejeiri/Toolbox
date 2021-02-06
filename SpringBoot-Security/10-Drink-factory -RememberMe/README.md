@@ -85,6 +85,7 @@ Simple Hash-Based Token Remember Me
 	.httpBasic()
     .and().csrf().ignoringAntMatchers("/h2-console/**", "/api/**")
     .and()
+	//rememberMe without persistence
     .rememberMe()
 		//Key value built into the hash.
         .key("drink-key")
@@ -121,4 +122,68 @@ DEBUG 2660 --- [nio-8080-exec-2] o.s.s.w.a.i.FilterSecurityInterceptor    : Prev
 
 
 
+Persistent Token Rememeber Me
+-----------
 
+**Step 1** : We need to **create at table** where to store the token (i.e script schema.sql):
+```sql
+create table persistent_logins (username varchar(64) not null,
+                                token varchar(64) not null,
+                                series varchar(64) primary key,
+                                last_used timestamp not null);
+```
+**by default, spring boot is will look for a file called schema.sql and run it on startup to create a database table**. For that, it uses straight JDBC and not hibernate.
+
+
+
+**Step 2** : Create a separate configuration class `SecurityBeans.java`, we  use `PersistentTokenRepository` interface to provide back a persistent token repository, so it does follow the standard spring security. We need to create a `@Bean` on `PersistentTokenRepository` interface to be injected by Spring context at runtime. 
+
+```java
+package com.elearning.drink.drinkfactory.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import javax.sql.DataSource;
+
+@Configuration
+public class SecurityBeans {
+
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository(DataSource dataSource){
+        JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+        tokenRepository.setDataSource(dataSource);
+        return tokenRepository;
+    }
+}
+```
+
+**Step 3** : adjust `rememberMe()` in [SecurityConfig.java](src/main/java/com/elearning/drink/drinkfactory/config/SecurityConfig.java).
+```java
+...
+private final PersistentTokenRepository persistentTokenRepository;
+
+...
+.httpBasic()
+                .and().csrf().ignoringAntMatchers("/h2-console/**", "/api/**")
+				//rememberMe with persistence
+                .and().rememberMe()
+                        .tokenRepository(persistentTokenRepository)
+                        .userDetailsService(userDetailsService);
+
+...
+```
+
+**Persistent Token Rememeber Me** is not like the **hash token** (e.g. `YWRtaW46MTYxMzgxODE1ODgxMzo1MzIyMDNiZmQ0ZjBmOWQ3YzIxNjgwMjgwMDUzZjgwMw` see previous section above) it 's based on a **random generated string** `token` associated with the `username` in the `persistent_logins` table.
+
+
+When we **base64 decode**, and **url decode** the `remember-me` **cookie**: for instance `Y0RZRmNZUHdnblJnTkY2RTdjUFdDUSUzRCUzRDptS2RPcUlOeURRcGlaUmF4Ym1CSzh3JTNEJTNE`, we find out:
+- **base64 decode** + **url decode** : `cDYFcYPwgnRgNF6E7cPWCQ==:/0Bvh4XlDZHBvEqi0dyopw==`,
+-  where `cDYFcYPwgnRgNF6E7cPWCQ==` is the `persistent_logins.series`field (doesn't change!) 
+- and `/0Bvh4XlDZHBvEqi0dyopw==` is the `persistent_logins.token` change when we remove `JSESSIONID` **cookie** .
+
+
+From the same browser, each time we **remove** the `JSESSIONID`, we don't get to **log in** thanks to `remember-me` **cookie**, but the `token` in database change!.
+
+if we  delete `remember-me` **cookie**, we need to **log in again**.

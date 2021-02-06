@@ -15,6 +15,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.data.repository.query.SecurityEvaluationContextExtension;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
@@ -25,6 +26,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserDetailsService userDetailsService;
+    private final PersistentTokenRepository persistentTokenRepository;
 
     //needed for use with Spring Data JPA SPeL
     @Bean
@@ -124,12 +126,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .httpBasic()
                 .and().csrf().ignoringAntMatchers("/h2-console/**", "/api/**")
                 .and()
+                //rememberMe with persistence
                 .rememberMe()
+                    .tokenRepository(persistentTokenRepository)
+                    .userDetailsService(userDetailsService);
+        //rememberMe without persistence
+                /*
+                    .rememberMe()
                     //Key value built into the hash.
                     .key("drink-key")
                     //we had to add userDetailsService to make rememberMe work, otherwise apps could get away with it.
                     //java.lang.IllegalStateException: UserDetailsService is required.
-                    .userDetailsService(userDetailsService)
+                    .userDetailsService(userDetailsService)*/
         ;
 
         //by default, Spring Security is preventing frames
