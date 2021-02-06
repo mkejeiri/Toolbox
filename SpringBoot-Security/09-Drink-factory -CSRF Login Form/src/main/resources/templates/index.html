@@ -8,7 +8,8 @@
 </head>
 <body>
 <h2 th:text="#{welcomemsg}">Spring Drink Factory Monolith</h2>
-<div class="row">
+<!--show only if not authenticated-->
+<div class="row" sec:authorize="!isAuthenticated()">
     <div class="col-md-12">
         <p th:if="${loginError}" class="error">Wrong Username or password</p>
         <form th:action="@{/login}" method="post">
@@ -20,9 +21,11 @@
         </form>
     </div>
 </div>
-<div class="row">
+
+<!--show only if authenticated-->
+<div class="row" sec:authorize="isAuthenticated()">
     <div class="col-md-12">
-        <p sec:authorize="isAuthenticated()" th:text="'Welcome: ' + ${#authentication?.principal?.username}">User</p>
+        <p th:text="'Welcome: ' + ${#authentication?.principal?.username}">User</p>
         <p><a th:href="@{/logout}">Logout</a></p>
     </div>
 </div>

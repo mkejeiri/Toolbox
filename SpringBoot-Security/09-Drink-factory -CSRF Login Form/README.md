@@ -86,3 +86,31 @@ Note to logout using the default **Spring Security** : `http://localhost:8080/lo
 </div>
 ```
 
+> Spring provides **Spring Security tags** for **JSP templates** with nearly the **same functionality** as we see with **Thymeleaf**.
+
+
+**Refactore login and logout** using `sec:authorize="!isAuthenticated()"` or `sec:authorize="isAuthenticated()"`
+
+```html
+<!--show only if not authenticated-->
+<div class="row" sec:authorize="!isAuthenticated()">
+    <div class="col-md-12">
+        <p th:if="${loginError}" class="error">Wrong Username or password</p>
+        <form th:action="@{/login}" method="post">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" autofocus="true" autocomplete="off">
+            <label for="password">Username:</label>
+            <input type="password" id="password" name="password" autofocus="true" autocomplete="off">
+            <input type="submit" value="Log In">
+        </form>
+    </div>
+</div>
+
+<!--show only if authenticated-->
+<div class="row" sec:authorize="isAuthenticated()">
+    <div class="col-md-12">
+        <p th:text="'Welcome: ' + ${#authentication?.principal?.username}">User</p>
+        <p><a th:href="@{/logout}">Logout</a></p>
+    </div>
+</div>
+```
