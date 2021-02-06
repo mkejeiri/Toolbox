@@ -328,7 +328,7 @@ mvn dependency:tree
 
 mvn help:effective-pom
 
-mvn package -DTestskip
+mvn package -DskipTests
 
 mvn clean dependency:copy-dependencies package
 
