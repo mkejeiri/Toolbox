@@ -78,7 +78,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     //.antMatchers(HttpMethod.GET, "/api/v1/drink/**").permitAll()
 //                            .mvcMatchers(HttpMethod.GET, "/api/v1/drink/**")
 //                            .hasAnyRole("USER", "CUSTOMER", "ADMIN")
-//                          .mvcMatchers(HttpMethod.DELETE, "/api/v1/drink/**").hasRole("ADMIN") -> replaced by @PreAuthorize("hasRole('ADMIN')")
+//                          .mvcMatchers(HttpMethod.DELETE, "/api/v1/drink/**").hasRole("ADMIN")
+//                          -> replaced by @PreAuthorize("hasRole('ADMIN')")
 //                            .mvcMatchers(HttpMethod.GET, "/brewery/api/v1/breweries")
 //                            .hasAnyRole("CUSTOMER", "ADMIN")
 //                            .mvcMatchers(HttpMethod.GET, "/api/v1/drinkUpc/{upc}")
@@ -91,8 +92,27 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .anyRequest().authenticated()
                 .and()
-                .formLogin()
-                .and()
+                .formLogin(httpSecurityFormLoginConfigurer ->
+                        {
+                            httpSecurityFormLoginConfigurer
+                                    .loginProcessingUrl("/login")
+                                    //we use index as a default page for the login (customizable)
+                                    .loginPage("/").permitAll()
+                                    //on success we forward to the index page (customizable)
+                                    .successForwardUrl("/")
+                                    //redirect everything to index page (customizable)
+                                    .defaultSuccessUrl("/");
+                        }
+
+                ).logout(httpSecurityLogoutConfigurer -> {
+                    httpSecurityLogoutConfigurer
+                    //Since we have a link to logout (i.e. get request) and spring security
+                    //handles post request for logout we need to override.
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
+                    .logoutSuccessUrl("/")
+                    .permitAll();
+        })
+//                .and()
                 .httpBasic()
                 .and().csrf().ignoringAntMatchers("/h2-console/**", "/api/**")
         ;

@@ -114,3 +114,56 @@ Note to logout using the default **Spring Security** : `http://localhost:8080/lo
     </div>
 </div>
 ```
+
+**Login/Logout configuration**
+
+Using `formLogin` and `logout` methods we configure the **pages** that handles **login** and **logout** and also **redirection**.
+
+The **login page** is the **index page**, but we could also use different page (i.e. lot of flexibility).
+Some applications are going to have their own login page where we will **show** the **login page** and then **redirect back** to that **application**, here we are building it into the **index page**. When the login page (i.e. index) **success**, we **forward** as well the **default** to the **index page**.
+
+
+For the **logout behavior**, We use `logoutRequestMatcher`, because **spring security** **default behavior** is expecting a **post** against **logout**, so we need to **specify** and allow a `GET` against the **logout**. If we're using **JavaScript** and we're able to do a **post action** we can **omit** this then.
+
+
+
+```java
+@Configuration
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+...
+@Override
+    protected void configure(HttpSecurity http) throws Exception {
+       ...
+                .formLogin(httpSecurityFormLoginConfigurer ->
+                        {
+                            httpSecurityFormLoginConfigurer
+                                    .loginProcessingUrl("/login")
+                                    //we use index as a default page for the login (customizable)
+                                    .loginPage("/").permitAll()
+                                    //on success we forward to the index page (customizable)
+                                    .successForwardUrl("/")
+                                    //redirect everything to index page (customizable)
+                                    .defaultSuccessUrl("/");
+                        }
+
+                ).logout(httpSecurityLogoutConfigurer -> {
+                    httpSecurityLogoutConfigurer
+                    //Since we have a link to logout (i.e. get request) and spring security
+                    //handles post request for logout we need to override.
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
+                    .logoutSuccessUrl("/")
+                    .permitAll();
+        })
+                .httpBasic()
+                .and().csrf().ignoringAntMatchers("/h2-console/**", "/api/**");
+
+        //by default, Spring Security is preventing frames
+        http.headers().frameOptions().sameOrigin();
+    }
+...
+
+}
+
+```
