@@ -231,3 +231,13 @@ In **UI** we use those params (i.e. `?error` & `?logout`) to **display messages*
 <div th:if="${param.error}" class="alert alert-danger">Invalid Username/Password</div>
 <div th:if="${param.logout}" class="alert alert-success">You Have Logged Out</div>
 ```
+
+
+**show Elements based on User Permission**
+
+Go to `findDrinks.html` template and add the following :
+
+- `xmlns:sec="http://www.thymeleaf.org/extras/spring-security"` to the template
+- `sec:authorize="hasAuthority('drink.create')"`, so that tag, it will render this element if the **logged-in user** has authority of `drink.create`.
+
+`<a sec:authorize="hasAuthority('drink.create')" class="btn btn-default" th:href="@{/drinks/new}">Add Drink</a>`
