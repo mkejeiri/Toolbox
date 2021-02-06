@@ -89,6 +89,36 @@ public class AuthenticationSuccessListener {
 
 ```
 
+#### Logging of Authentication Failure Events
+
+**Spring Security** leverages the **events feature** found in the **core** of the **Spring Framework**.
+
+```java
+@Slf4j
+@Component
+public class AuthenticationFailureListener {
+    @EventListener
+    //registering this method as an EventListener, and spring framework will look for the @EventListener annotation,
+    //and then when we have an event with the type of AuthenticationFailureBadCredentialsEvent, this listen methode will get invoked.
+    public void listen(AuthenticationFailureBadCredentialsEvent event){
+        log.debug("Login failure");
+
+        if(event.getSource() instanceof UsernamePasswordAuthenticationToken){
+            UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) event.getSource();
+
+            if(token.getPrincipal() instanceof String){
+                log.debug("Attempted Username: " + token.getPrincipal());
+            }
+
+            if(token.getDetails() instanceof WebAuthenticationDetails){
+                WebAuthenticationDetails details = (WebAuthenticationDetails) token.getDetails();
+
+                log.debug("Source IP: " + details.getRemoteAddress());
+            }
+        }
+    }
+}
+```
 
 
 
