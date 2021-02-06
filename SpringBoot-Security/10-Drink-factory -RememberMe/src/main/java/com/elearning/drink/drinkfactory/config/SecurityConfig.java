@@ -3,6 +3,7 @@ package com.elearning.drink.drinkfactory.config;
 import com.elearning.drink.drinkfactory.security.CustomPasswordEncoderFactories;
 import com.elearning.drink.drinkfactory.security.RestHeaderAuthFilter;
 import com.elearning.drink.drinkfactory.security.RestParamAuthFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.data.repository.query.SecurityEvaluationContextExtension;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -17,10 +19,12 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 //@EnableGlobalMethodSecurity(securedEnabled = true)
 //@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    private final UserDetailsService userDetailsService;
 
     //needed for use with Spring Data JPA SPeL
     @Bean
@@ -119,6 +123,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 //                .and()
                 .httpBasic()
                 .and().csrf().ignoringAntMatchers("/h2-console/**", "/api/**")
+                .and()
+                .rememberMe()
+                    //Key value built into the hash.
+                    .key("drink-key")
+                    //we had to add userDetailsService to make rememberMe work, otherwise apps could get away with it.
+                    //java.lang.IllegalStateException: UserDetailsService is required.
+                    .userDetailsService(userDetailsService)
         ;
 
         //by default, Spring Security is preventing frames

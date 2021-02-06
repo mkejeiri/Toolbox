@@ -56,8 +56,68 @@ Spring Security Remember Me
 [More on Persistent login cookie best practice](https://web.archive.org/web/20080825010602/http://fishbowl.pastiche.org/2004/01/19/persistent_login_cookie_best_practice/)
 
 
+Simple Hash-Based Token Remember Me
+---------
 
 
+**Spring security** by default looks for the **property** `remember-me`, we could change that but we need to instruct **Spring security** for new used **value**.
+
+`index.html`
+```html
+		<form th:action="@{/login}" method="post">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" autofocus="true" autocomplete="off">
+            <label for="password">Username:</label>
+            <input type="password" id="password" name="password" autofocus="true" autocomplete="off">
+            <input type="submit" value="Log In">
+            <label for="remember-me">Remember Me:</label>
+            <input type="checkbox" id="remember-me" name="remember-me" />
+        </form>
+```
+
+**Configure** the **remember me** process in the [SecurityConfig.java](src/main/java/com/elearning/drink/drinkfactory/config/SecurityConfig.java).
+
+```java
+	...
+	private final UserDetailsService userDetailsService;
+	...
+	
+	.httpBasic()
+    .and().csrf().ignoringAntMatchers("/h2-console/**", "/api/**")
+    .and()
+    .rememberMe()
+		//Key value built into the hash.
+        .key("drink-key")
+		//we had to add userDetailsService to make rememberMe work, otherwise apps could get away with it.
+        //java.lang.IllegalStateException: UserDetailsService is required.	
+		.userDetailsService(userDetailsService)
+```
+
+`remember-me` **Cookie structure**:
+
+`remember-me` **cookie** :
+- `YWRtaW46MTYxMzgxODE1ODgxMzo1MzIyMDNiZmQ0ZjBmOWQ3YzIxNjgwMjgwMDUzZjgwMw`
+- Base64 decoded : `admin:1613818158813:532203bfd4f0f9d7c21680280053f803`
+
+| user|expiration date| hashed password and key value|
+| ------------- |:-------------:| -----:|
+| `admin`| `1613818158813` | `532203bfd4f0f9d7c21680280053f803` |
+
+ `key value` is random key not shared with general public. **Note** that `532203bfd4f0f9d7c21680280053f803` is a hash value which very difficult to reverse.
+
+
+				 
+- Without `remember-me` **cookie**, if we delete `JSESSIONID` we get logged out. We always receive some kind of `JSESSIONID` from the server, but we won't be able to login with that.  
+- With `remember-me` **cookie**, even if we delete `JSESSIONID` we stay logged in (i.e. see `Previously Authenticated` in the output).
+```
+DEBUG 2660 --- [nio-8080-exec-2] o.s.s.w.a.i.FilterSecurityInterceptor    : Previously Authenticated:
+ org.springframework.security.authentication.RememberMeAuthenticationToken@4a87d2be: Principal:
+ com.elearning.drink.drinkfactory.domain.User@1938ccc8; Credentials: [PROTECTED]; Authenticated: true; Details:
+ org.springframework.security.web.authentication.WebAuthenticationDetails@b364: RemoteIpAddress: 0:0:0:0:0:0:0:1;
+ SessionId: null; Granted Authorities: drink.update, customer.read, brewery.delete, order.create, customer.create, 
+ drink.delete, brewery.update, drink.read, brewery.create, brewery.read, customer.delete, order.delete, order.read, 
+ drink.create, order.update, order.pickup, customer.update
+```
 
 
 
