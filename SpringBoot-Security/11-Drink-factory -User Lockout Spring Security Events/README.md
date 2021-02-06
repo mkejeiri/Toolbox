@@ -344,3 +344,176 @@ We could use them to diplay a user friendly message, rather than use the **query
 ```
 
 
+Automatically Unlocking Accounts After Period of Time
+--------
+
+**Step 1** 
+
+We are **enabling** `@EnableScheduling`  and `@EnableAsync`, which allow **spring to execute task** on a **schedule basis**, and we are providing a `TaskExecutor`.
+This **basic configuration** will allow us to **set up a schedule process**, and what we want **periodically** to **look** at our **user population** to see if there's any **locked accounts** and **unlock** them.
+
+```java
+package com.elearning.drink.drinkfactory.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
+
+@EnableScheduling
+@EnableAsync
+@Configuration
+public class TaskConfig {
+    @Bean
+    TaskExecutor taskExecutor() {
+        return new SimpleAsyncTaskExecutor();
+    }
+}
+```
+**Step 2**: Update the `User` **entity** and add `createdDate` & `lastModifiedDate` properties. 
+
+```java
+@NoArgsConstructor
+@AllArgsConstructor
+@Setter
+@Getter
+@Builder
+@Entity
+//@Table(name = "Users")
+public class User implements UserDetails, CredentialsContainer {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+    private String username;
+    private String password;
+
+    //We can use the project Lombok @Singular annotation, and in Builder pattern,
+    //we will get a property called authority, and then we can add in a Singular authority via the Builder pattern.
+    @Singular
+    @ManyToMany(cascade = {CascadeType.MERGE}, fetch = FetchType.EAGER)
+    @JoinTable(name = "USER_ROLES", joinColumns = @JoinColumn(name = "USER_ID", referencedColumnName = "ID"),
+            inverseJoinColumns = @JoinColumn(name = "ROLE_ID", referencedColumnName = "ID"))
+    private Set<Role> roles;
+
+    @Transient
+    private Set<Authority> authorities;
+
+    @Transient
+    public Set<GrantedAuthority> getAuthorities() {
+        return this.roles.stream()
+                .map(Role::getAuthorities)
+                .flatMap(Set::stream)
+                .map(authority -> {
+                    return new SimpleGrantedAuthority(authority.getPermission());
+                })
+                .collect(Collectors.toSet());
+    }
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    private Customer customer;
+
+    //Without having the @Builder.Default annotation the default properties will actually
+    //get set to null if we use the Project Lombok Builder pattern.
+    @Builder.Default
+    private Boolean accountNonExpired = true;
+
+    @Builder.Default
+    private Boolean accountNonLocked = true;
+
+    @Builder.Default
+    private Boolean credentialsNonExpired = true;
+
+    @Builder.Default
+    private Boolean enabled = true;
+
+    @Override
+    public void eraseCredentials() {
+        this.password = null;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return this.accountNonExpired;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return this.accountNonLocked;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return this.credentialsNonExpired;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    //Standard Jpa and hibernate annotations
+    @CreationTimestamp
+    @Column(updatable = false)
+    private Timestamp createdDate;
+
+    @UpdateTimestamp
+    private Timestamp lastModifiedDate;
+}
+
+```
+
+**Step 3**: **Setting up spring data JPA** that's will give us a query method (i.e. `findAllByAccountNonLockedAndLastModifiedDateIsBefore`) to look up **accounts** where they are **locked out** by the `locked` property and the `lastModifiedDate` property.
+
+```java
+package com.elearning.drink.drinkfactory.repositories.security;
+
+import com.elearning.drink.drinkfactory.domain.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Optional;
+
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByUsername(String username);
+
+    List<User> findAllByAccountNonLockedAndLastModifiedDateIsBefore(Boolean locked, Timestamp timestamp);
+}
+```
+
+**Step 4**: We create `UserUnlockService` an unlock process, which will run at `fixedRate` (e.g 5000 milliseconds = 5 sec).
+
+```java
+@Slf4j
+@RequiredArgsConstructor
+@Service
+public class UserUnlockService {
+
+    private final UserRepository userRepository;
+
+    //Scheduled annotations instructs spring framework at fixed rate of five seconds (i.e. 5000 milliseconds).
+    //This will run this every five seconds.
+    @Scheduled(fixedRate = 5000)
+    public void unlockAccounts() {
+        log.debug("Running Unlock Accounts");
+
+        List<User> lockedUsers = userRepository
+                .findAllByAccountNonLockedAndLastModifiedDateIsBefore(false,
+                        Timestamp.valueOf(LocalDateTime.now().minusSeconds(30)));
+
+        if (lockedUsers.size() > 0) {
+            log.debug("Locked Accounts Found, Unlocking");
+            lockedUsers.forEach(user -> user.setAccountNonLocked(true));
+
+            userRepository.saveAll(lockedUsers);
+        }
+    }
+
+}
+
+```
+
+
