@@ -56,3 +56,33 @@ Note to logout using the default **Spring Security** : `http://localhost:8080/lo
 </div>
 ```
 
+**Add dependency**
+```
+<dependency>
+    <groupId>org.thymeleaf.extras</groupId>
+    <artifactId>thymeleaf-extras-springsecurity5</artifactId>
+</dependency>
+```
+
+**Add xmlns namespace** `xmlns:sec="http://www.thymeleaf.org/extras/spring-security`
+
+```html
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~{::body},'home')}">
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{fragments/layout :: layout (~{::body},'home')}">
+
+```
+
+**Display the username when authenticated** : 
+
+```html
+<div class="row">
+    <div class="col-md-12">
+        <p sec:authorize="isAuthenticated()" th:text="'Welcome: ' + ${#authentication?.principal?.username}">User</p>
+        <p><a th:href="@{/logout}">Logout</a></p>
+    </div>
+</div>
+```
+
