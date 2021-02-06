@@ -101,7 +101,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                                     //on success we forward to the index page (customizable)
                                     .successForwardUrl("/")
                                     //redirect everything to index page (customizable)
-                                    .defaultSuccessUrl("/");
+                                    .defaultSuccessUrl("/")
+                                    //error  param used by the UI to display alert incorrect username/password
+                                    .failureUrl("/?error");
                         }
 
                 ).logout(httpSecurityLogoutConfigurer -> {
@@ -110,6 +112,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     //handles post request for logout we need to override.
                     .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
                     .logoutSuccessUrl("/")
+                     //error param used by the UI to display success of logout
+                    .logoutSuccessUrl("/?logout")
                     .permitAll();
         })
 //                .and()

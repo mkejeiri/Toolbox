@@ -115,7 +115,8 @@ Note to logout using the default **Spring Security** : `http://localhost:8080/lo
 </div>
 ```
 
-**Login/Logout configuration**
+Login/Logout configuration
+--------
 
 Using `formLogin` and `logout` methods we configure the **pages** that handles **login** and **logout** and also **redirection**.
 
@@ -166,4 +167,67 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 }
 
+```
+
+#### Login and Logout Messages
+
+
+To be able to use `alert/success` bootstrap formating to display **end user** **messages**, we **add** into the **URL** :
+- **error  param** (i.e. `?error`)
+- **logout  param** (i.e. `?logout`)
+
+`error` or `logout`, allows the UI to **key off** those **values** and **provide feedback** to the **end user**.
+
+
+```java
+@Configuration
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+...
+@Override
+    protected void configure(HttpSecurity http) throws Exception {
+       ...
+                .formLogin(httpSecurityFormLoginConfigurer ->
+                        {
+                            httpSecurityFormLoginConfigurer
+                                    .loginProcessingUrl("/login")
+                                    //we use index as a default page for the login (customizable)
+                                    .loginPage("/").permitAll()
+                                    //on success we forward to the index page (customizable)
+                                    .successForwardUrl("/")
+                                    //redirect everything to index page (customizable)
+                                    .defaultSuccessUrl("/");
+									//error param used by the UI to display alert incorrect username/password
+                                    .failureUrl("/?error");
+									
+                        }
+
+                ).logout(httpSecurityLogoutConfigurer -> {
+                    httpSecurityLogoutConfigurer
+                    //Since we have a link to logout (i.e. get request) and spring security
+                    //handles post request for logout we need to override.
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
+                    .logoutSuccessUrl("/")
+					 //error param used by the UI to display success of logout
+                    .logoutSuccessUrl("/?logout")
+                    .permitAll();
+        })
+                .httpBasic()
+                .and().csrf().ignoringAntMatchers("/h2-console/**", "/api/**");
+
+        //by default, Spring Security is preventing frames
+        http.headers().frameOptions().sameOrigin();
+    }
+...
+
+}
+
+```
+
+In **UI** we use those params (i.e. `?error` & `?logout`) to **display messages**
+
+```html
+<div th:if="${param.error}" class="alert alert-danger">Invalid Username/Password</div>
+<div th:if="${param.logout}" class="alert alert-success">You Have Logged Out</div>
 ```
