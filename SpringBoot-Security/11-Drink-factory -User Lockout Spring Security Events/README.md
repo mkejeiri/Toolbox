@@ -69,7 +69,7 @@ public class AuthenticationSuccessListener {
 
     @EventListener
     //registering this method as an EventListener, and spring framework will look for the @EventListener annotation,
-    //and then when we have an event with the type of AuthenticationSuccessEvent, this listen methode will get invoked.
+    //and then when we have an event with the type of AuthenticationSuccessEvent, this listen method will get invoked.
     public void listen(AuthenticationSuccessEvent event) {
         UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) event.getSource();
 
@@ -99,7 +99,7 @@ public class AuthenticationSuccessListener {
 public class AuthenticationFailureListener {
     @EventListener
     //registering this method as an EventListener, and spring framework will look for the @EventListener annotation,
-    //and then when we have an event with the type of AuthenticationFailureBadCredentialsEvent, this listen methode will get invoked.
+    //and then when we have an event with the type of AuthenticationFailureBadCredentialsEvent, this listen method will get invoked.
     public void listen(AuthenticationFailureBadCredentialsEvent event){
         log.debug("Login failure");
 
@@ -119,6 +119,84 @@ public class AuthenticationFailureListener {
     }
 }
 ```
+
+#### Persistence of Authentication Success Events
+
+**Step 1** : create `LoginSuccess`  **entity**
+
+```java
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Getter
+@Setter
+@Entity
+public class LoginSuccess {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer id;
+
+    @ManyToOne
+    private User user;
+
+    private String sourceIp;
+
+    @CreationTimestamp
+    @Column(updatable = false)
+    private Timestamp createdDate;
+
+    @UpdateTimestamp
+    private Timestamp lastModifiedDate;
+}
+```
+
+**Step 2** : create `LoginSuccessRepository`  **repository**
+
+```java
+package com.elearning.drink.drinkfactory.security;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface LoginSuccessRepository extends JpaRepository<LoginSuccess, Integer> {
+}
+
+```
+
+**Step 2** : inject `LoginSuccessRepository`  **repository** into `AuthenticationSuccessListener`
+
+```java
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class AuthenticationSuccessListener {
+    private final LoginSuccessRepository loginSuccessRepository;
+    @EventListener
+    //registering this method as an EventListener, and spring framework will look for the @EventListener annotation,
+    //and then when we have an event with the type of AuthenticationSuccessEvent,
+    //this listen method will get invoked.
+    public void listen(AuthenticationSuccessEvent event) {
+        LoginSuccess.LoginSuccessBuilder builder = LoginSuccess.builder();
+
+        UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) event.getSource();
+
+        if (token.getPrincipal() instanceof User) {
+            User user = (User) token.getPrincipal();
+            builder.user(user);
+            log.debug("*** User name logged in: " + user.getUsername());
+        }
+
+        if (token.getDetails() instanceof WebAuthenticationDetails) {
+            WebAuthenticationDetails details = (WebAuthenticationDetails) token.getDetails();
+            builder.sourceIp(details.getRemoteAddress());
+            log.debug("*** Source IP: " + details.getRemoteAddress());
+        }
+        LoginSuccess loginSuccess = loginSuccessRepository.save(builder.build());
+        log.debug("Login Success saved. Id: " + loginSuccess.getId());
+    }
+}
+```
+
 
 
 

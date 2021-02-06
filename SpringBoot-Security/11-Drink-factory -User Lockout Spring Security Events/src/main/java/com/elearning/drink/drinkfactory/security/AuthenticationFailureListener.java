@@ -12,7 +12,8 @@ import org.springframework.stereotype.Component;
 public class AuthenticationFailureListener {
     @EventListener
     //registering this method as an EventListener, and spring framework will look for the @EventListener annotation,
-    //and then when we have an event with the type of AuthenticationFailureBadCredentialsEvent, this listen methode will get invoked.
+    //and then when we have an event with the type of AuthenticationFailureBadCredentialsEvent, this listen
+    //method will get invoked.
     public void listen(AuthenticationFailureBadCredentialsEvent event){
         log.debug("Login failure");
 
