@@ -595,3 +595,116 @@ public class Google2faFilter extends GenericFilterBean {
 }
 ```
 
+
+Add the `Google2faFilter` filter into the filter chain
+-------
+We continue with the configuration for spring security and we need to add the `Google2faFilter`  filter into the filter chain [SecurityConfig.java](src/main/java/com/elearning/drink/drinkfactory/config/SecurityConfig.java).
+
+**Step 1** - add ` private final Google2faFilter google2faFilter` to `SecurityConfig`.
+
+**Step 2** - We want the `UsernamePasswordAuthenticationFilter` to run first, so the user will be logged in (the session's been logged in), so we need to run `Google2faFilter` after, thus **ensures** that we have the proper **spring security context** established with the **user name and credentials**.
+
+`SessionManagementFilter` **detects** that a user has been **authenticated**, so definitely we need to run `Google2faFilter` **before!** :
+
+ `http.addFilterBefore(google2faFilter, SessionManagementFilter.class)`
+ 
+```java
+@Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    private final UserDetailsService userDetailsService;
+    private final PersistentTokenRepository persistentTokenRepository;
+    private final Google2faFilter google2faFilter;
+
+    //needed for use with Spring Data JPA SPeL
+    @Bean
+    public SecurityEvaluationContextExtension securityEvaluationContextExtension() {
+        return new SecurityEvaluationContextExtension();
+    }
+
+    public RestHeaderAuthFilter restHeaderAuthFilter(AuthenticationManager authenticationManager) {
+        RestHeaderAuthFilter filter = new RestHeaderAuthFilter(new AntPathRequestMatcher("/api/**"));
+        filter.setAuthenticationManager(authenticationManager);
+        return filter;
+    }
+
+    public RestParamAuthFilter restParamAuthFilter(AuthenticationManager authenticationManager) {
+        RestParamAuthFilter filter = new RestParamAuthFilter(new AntPathRequestMatcher("/api/**"));
+        filter.setAuthenticationManager(authenticationManager);
+        return filter;
+    }
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+
+        //SessionManagementFilter detects that a user has been authenticated!
+        http.addFilterBefore(google2faFilter, SessionManagementFilter.class);
+
+        http.addFilterBefore(restHeaderAuthFilter(authenticationManager()),
+                UsernamePasswordAuthenticationFilter.class)
+        ;
+
+
+        http.addFilterBefore(restParamAuthFilter(authenticationManager()),
+                UsernamePasswordAuthenticationFilter.class);
+
+        http
+                //this should before the 2nd authorizeRequests,
+                //because the 2nd authorizeRequests is for anyRequest()!!!
+                .authorizeRequests(expressionInterceptUrlRegistry -> {
+                    expressionInterceptUrlRegistry
+                            //Permit root path & static assets
+                            .antMatchers("/", "/webjars/**", "/login", "/resources/**").permitAll()
+                            .antMatchers("/h2-console/**").permitAll() //don't use in production
+                    ;
+                })
+
+                //Any other request rules!
+                .authorizeRequests()
+                .anyRequest().authenticated()
+                .and()
+                .formLogin(httpSecurityFormLoginConfigurer ->
+                        {
+                            httpSecurityFormLoginConfigurer
+                                    .loginProcessingUrl("/login")
+                                    //we use index as a default page for the login (customizable)
+                                    .loginPage("/").permitAll()
+                                    //on success we forward to the index page (customizable)
+                                    .successForwardUrl("/")
+                                    //redirect everything to index page (customizable)
+                                    .defaultSuccessUrl("/")
+                                    //error  param used by the UI to display alert incorrect username/password
+                                    .failureUrl("/?error");
+                        }
+
+                ).logout(httpSecurityLogoutConfigurer -> {
+            httpSecurityLogoutConfigurer
+                    //Since we have a link to logout (i.e. get request) and spring security
+                    //handles post request for logout we need to override.
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
+                    .logoutSuccessUrl("/")
+                    //error param used by the UI to display success of logout
+                    .logoutSuccessUrl("/?logout")
+                    .permitAll();
+        })
+                .httpBasic()
+                .and().csrf().ignoringAntMatchers("/h2-console/**", "/api/**")
+                .and()
+                //rememberMe with persistence
+                .rememberMe()
+                .tokenRepository(persistentTokenRepository)
+                .userDetailsService(userDetailsService);
+        http.headers().frameOptions().sameOrigin();
+    }
+
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return CustomPasswordEncoderFactories.createDelegatingPasswordEncoder();
+    }
+}
+
+```
+
+
