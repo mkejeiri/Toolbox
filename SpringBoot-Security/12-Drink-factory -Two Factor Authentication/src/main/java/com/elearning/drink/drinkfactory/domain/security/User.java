@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Entity
 //@Table(name = "Users")
 public class User implements UserDetails, CredentialsContainer {
-
+    static final long serialVersionUID = -3864476000168496979L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -96,7 +96,7 @@ public class User implements UserDetails, CredentialsContainer {
 
     @Builder.Default
     //is user will use the google auth?
-    private Boolean userGoogle2fa = false;
+    private Boolean useGoogle2fa = false;
 
     //property to hold a secret
     private String google2FaSecret;

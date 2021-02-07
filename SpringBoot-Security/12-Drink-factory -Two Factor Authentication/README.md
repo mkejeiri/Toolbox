@@ -77,7 +77,7 @@ Configure User Entity for 2FA
 ----------
 
 **Update** the [user.java](src/main/java/com/elearning/drink/drinkfactory/domain/security/User.java) **entity**:
-- Have they **registered?** (i.e `userGoogle2fa`)
+- Have they **registered?** (i.e `useGoogle2fa`)
 - **If** they have **registered**, what's the **secret**? (i.e `google2FaSecret`)
 - `google2faRequired` is **transient** property which is only used when the **user** object has been set within the **spring security context** to remember the way the authentication flow went through (and `google2faRequired` set to false afterward).
 
@@ -105,7 +105,7 @@ public class User implements UserDetails, CredentialsContainer {
 
     @Builder.Default
     //is user will use the google auth?
-    private Boolean userGoogle2fa = false;
+    private Boolean useGoogle2fa = false;
 
     //property to hold a secret
     private String google2FaSecret;
@@ -117,8 +117,8 @@ public class User implements UserDetails, CredentialsContainer {
 }
 
 ```
-The **User** is **forced** to **authenticate** when `userGoogle2fa=true` and `google2faRequired=true`.
-Once the **user enter-in** the **proper** authentication **value**, `google2faRequired` become **false**, i.e. no **longer needed** since the **user** passed through the **Two-Factor authentication**. This operation is **only triggered** if `userGoogle2fa==true`.
+The **User** is **forced** to **authenticate** when `useGoogle2fa=true` and `google2faRequired=true`.
+Once the **user enter-in** the **proper** authentication **value**, `google2faRequired` become **false**, i.e. no **longer needed** since the **user** passed through the **Two-Factor authentication**. This operation is **only triggered** if `useGoogle2fa==true`.
 
 
 Configure 2FA Registration Controller
@@ -427,7 +427,7 @@ public class UserController {
     }
 
     //Verify code
-    @PostMapping
+    @PostMapping("/verify2fa")
     public String verifyPostOf2Fa(@RequestParam Integer verifyCode) {
 
         //pull the user out of spring context
@@ -452,3 +452,4 @@ public class UserController {
 }
 
 ```
+

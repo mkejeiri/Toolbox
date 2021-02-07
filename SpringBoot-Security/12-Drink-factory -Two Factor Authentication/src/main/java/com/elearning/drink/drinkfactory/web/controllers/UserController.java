@@ -66,7 +66,7 @@ public class UserController {
 
             //setUserGoogle2fa(true): user has completed registration for Two-Factor authentication.
             //default is false.
-            savedUser.setUserGoogle2fa(true);
+            savedUser.setUseGoogle2fa(true);
             userRepository.save(savedUser);
             return "/index";
 
@@ -82,7 +82,7 @@ public class UserController {
     }
 
     //Verify code
-    @PostMapping
+    @PostMapping("/verify2fa")
     public String verifyPostOf2Fa(@RequestParam Integer verifyCode) {
 
         //pull the user out of spring context
