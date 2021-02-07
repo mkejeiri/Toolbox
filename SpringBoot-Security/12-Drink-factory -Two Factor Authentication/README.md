@@ -72,3 +72,50 @@ Spring Security Configuration
 
 > This Example is used for Spring MVC, will work for most typical web applications (Traditional Spring MVC application), it's also suitable for Single Page Javascript, e.g. Angular, ReactJS,...
 
+
+Configure User Entity for 2FA
+----------
+
+**Update** the [user.java](src/main/java/com/elearning/drink/drinkfactory/domain/security/User.java) **entity**:
+- Have they **registered?** (i.e `userGoogle2fa`)
+- **If** they have **registered**, what's the **secret**? (i.e `google2FaSecret`)
+- `google2faRequired` is **transient** property which is only used when the **user** object has been set within the **spring security context** to remember the way the authentication flow went through (and `google2faRequired` set to false afterward).
+
+**Scenario** :
+
+1- User log in with username and password. 
+
+2- User object set into the spring security context.
+
+3- User go through the two factor authentication process.
+
+
+
+```java
+@NoArgsConstructor
+@AllArgsConstructor
+@Setter
+@Getter
+@Builder
+@Entity
+//@Table(name = "Users")
+public class User implements UserDetails, CredentialsContainer {
+
+...
+
+    @Builder.Default
+    //is user will use the google auth?
+    private Boolean userGoogle2fa = false;
+
+    //property to hold a secret
+    private String google2FaSecret;
+
+    @Transient //set on the User POJO and not persisted
+    //set only when user object is filled in within spring security context and used as a property by the filters
+    private Boolean google2faRequired = true;
+...
+}
+
+```
+The **User** is **forced** to **authenticate** when `userGoogle2fa=true` and `google2faRequired=true`.
+Once the **user enter-in** the **proper** authentication **value**, `google2faRequired` become **false**, i.e. no **longer needed** since the **user** passed through the **Two-Factor authentication**. This operation is **only triggered** if `userGoogle2fa==true`.

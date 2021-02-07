@@ -94,6 +94,17 @@ public class User implements UserDetails, CredentialsContainer {
         return this.enabled;
     }
 
+    @Builder.Default
+    //is user will use the google auth?
+    private Boolean userGoogle2fa = false;
+
+    //property to hold a secret
+    private String google2FaSecret;
+
+    @Transient //set on the User POJO and not persisted
+    //set only when user object is filled in within spring security context and used as a property by the filters
+    private Boolean google2faRequired = true;
+
     //Standard Jpa and hibernate annotations
     @CreationTimestamp
     @Column(updatable = false)
