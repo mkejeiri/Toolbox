@@ -498,4 +498,54 @@ public class Google2faFilter extends GenericFilterBean {
 }
 ```
 
+Spring Security 2FA Failure Handler
+--------
 
+**Step 1** - Add [Google2faFailureHandler.java](src/main/java/com/elearning/drink/drinkfactory/security/google/Google2faFailureHandler.java) which **allow redirection** of the **authenticated user** who not yet **pass through 2fa**!. 
+```java
+@Slf4j
+//standard spring security interface AuthenticationFailureHandler
+public class Google2faFailureHandler implements AuthenticationFailureHandler {
+
+    //We could handle any type of exception here,
+    //but we're really not in an exception case, we want to capture the user and redirect them to this page.
+    @Override
+    public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
+                                        AuthenticationException exception) throws IOException, ServletException {
+        log.debug("Forward to 2fa");
+        request.getRequestDispatcher("/user/verify2fa")
+                .forward(request, response);
+
+    }
+}
+```
+
+
+**Step 2** - update [Google2faFilter.java](src/main/java/com/elearning/drink/drinkfactory/security/google/Google2faFilter.java) to handle **2FA Required** for an authenticated user (with userName/password).	 
+
+```java
+	....
+	//We create a new instance of Google2faFailureHandler,
+    //we're not injecting anything into it, so it doesn't need to be a spring bean component.
+    private final Google2faFailureHandler google2faFailureHandler = new Google2faFailureHandler();
+	@Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+            throws IOException, ServletException {
+	...
+               if (user.getUseGoogle2fa() && user.getGoogle2faRequired()) {
+                    log.debug("2FA Required");
+                    //If user is authenticated but have not entered in yet his code,
+                    //we need to redirect him/her to "/user/verify2fa", which's done through onAuthenticationFailure.
+                    google2faFailureHandler.onAuthenticationFailure(request, response,
+                            //we pass null, we don't handle exceptions.
+                            null);
+                    
+                    //After this authentication failure, we want to return out of method, 
+                    //we want to stop the filter chain and then continue, this will fire on all requests.
+                    return; 
+                }
+	...			
+    }
+				
+....
+```

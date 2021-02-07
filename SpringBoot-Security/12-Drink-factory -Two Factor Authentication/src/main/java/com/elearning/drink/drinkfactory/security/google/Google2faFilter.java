@@ -20,13 +20,16 @@ import java.io.IOException;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class Google2faFilter extends GenericFilterBean {
 
     private final AuthenticationTrustResolver authenticationTrustResolver = new AuthenticationTrustResolverImpl();
+    //We create a new instance of Google2faFailureHandler,
+    //we're not injecting anything into it, so it doesn't need to be a spring bean component.
+    private final Google2faFailureHandler google2faFailureHandler = new Google2faFailureHandler();
 
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+            throws IOException, ServletException {
 
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
@@ -47,7 +50,15 @@ public class Google2faFilter extends GenericFilterBean {
                 // if the user has 2 factors authentication enabled, and it's required.
                 if (user.getUseGoogle2fa() && user.getGoogle2faRequired()) {
                     log.debug("2FA Required");
-                    // todo add failure handler
+                    //If user is authenticated but have not entered in yet his code,
+                    //we need to redirect him/her to "/user/verify2fa", which's done through onAuthenticationFailure.
+                    google2faFailureHandler.onAuthenticationFailure(request, response,
+                            //we pass null, we don't handle exceptions.
+                            null);
+
+                    //After this authentication failure, we want to return out of method,
+                    //we want to stop the filter chain and then continue, this will fire on all requests.
+                    return;
                 }
             }
         }
