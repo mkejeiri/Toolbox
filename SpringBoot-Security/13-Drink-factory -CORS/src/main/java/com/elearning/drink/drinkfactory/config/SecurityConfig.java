@@ -19,13 +19,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.session.SessionManagementFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-
-@Configuration
-@EnableWebSecurity
 @RequiredArgsConstructor
+//@Configuration
+//@EnableWebSecurity
 //@EnableGlobalMethodSecurity(securedEnabled = true)
 //@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+//@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserDetailsService userDetailsService;
     private final PersistentTokenRepository persistentTokenRepository;
@@ -150,10 +149,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.headers().frameOptions().sameOrigin();
     }
 
-    @Bean
-    PasswordEncoder passwordEncoder() {
-        return CustomPasswordEncoderFactories.createDelegatingPasswordEncoder();
-    }
+//    @Bean
+//    PasswordEncoder passwordEncoder() {
+//        return CustomPasswordEncoderFactories.createDelegatingPasswordEncoder();
+//    }
 
 
 //    @Override
