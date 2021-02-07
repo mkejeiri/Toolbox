@@ -249,3 +249,79 @@ public class GoogleCredentialRepository implements ICredentialRepository {
 }
 
 ```
+
+
+Generate QR Code for Google Authenticator
+-----------
+**Step 1** - create [GoogleAuthenticator](src/main/java/com/elearning/drink/drinkfactory/config/SecurityBeans.java) `Bean`.
+```java
+@Configuration
+public class SecurityBeans {
+
+    @Bean
+   ...
+
+    @Bean
+    public GoogleAuthenticator googleAuthenticator(ICredentialRepository credentialRepository) {
+        GoogleAuthenticatorConfig.GoogleAuthenticatorConfigBuilder configBuilder
+                = new GoogleAuthenticatorConfig.GoogleAuthenticatorConfigBuilder();
+
+        //this token works is based on time of Unix time,
+        //while the time on the device and the server could be different.
+        configBuilder
+                //The time's up will open up the time window.
+                .setTimeStepSizeInMillis(TimeUnit.SECONDS.toMillis(60))
+                .setWindowSize(10)
+                //no scratch code, no persisted at all
+                .setNumberOfScratchCodes(0);
+
+        GoogleAuthenticator googleAuthenticator = new GoogleAuthenticator(configBuilder.build());
+        googleAuthenticator.setCredentialRepository(credentialRepository);
+        return googleAuthenticator;
+    }
+}
+```
+
+
+**Step 2** - update [UserController](src/main/java/com/elearning/drink/drinkfactory/web/controllers/UserController.java)
+```java
+public class UserController {
+
+    //ISSUER: show up in the Google authenticator as "my application".
+    public static final String ISSUER = "eLearning";
+    public static final String GOOGLE_URL_ATTRIBUTE_NAME = "googleurl";
+    private final UserRepository userRepository;
+    private final GoogleAuthenticator googleAuthenticator;
+
+    @GetMapping("/register2fa")
+    public String register2fa(Model model) {
+
+        User user = getUser();
+
+        //this will go out to Google Services to create a QR code and returning back an image
+        //for us to display on the Web page.
+        String url = GoogleAuthenticatorQRGenerator.getOtpAuthURL(ISSUER, user.getUsername(),
+                //Instruct Google to create the credentials which will call the save user credentials.
+                //i.e. create the credentials when the process happens -> create shared secret
+                //and also save it to our database...
+                googleAuthenticator.createCredentials(user.getUsername()));
+
+        log.debug("Google QR URL: " + url);
+
+        model.addAttribute(GOOGLE_URL_ATTRIBUTE_NAME, url);
+
+        return "user/register2fa";
+    }
+	
+	@PostMapping
+    public String confirm2Fa(@RequestParam Integer verifyCode) {
+
+        //todo - impl
+        return "index";
+    }
+
+    private User getUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+}
+```
