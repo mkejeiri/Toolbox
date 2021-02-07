@@ -11,11 +11,11 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         //CORS for GET, POST, PUT are managed globally here.
         //we could set url matchers
-        registry.addMapping("/**").allowedMethods("GET", "POST", "PUT", "DELETE") //allow all origin OR
+        //registry.addMapping("/**").allowedMethods("GET", "POST", "PUT", "DELETE") //allow all origin OR
                 ////or apply filter on origin
                 //.allowedOrigins("elearning.drinkfactory")
                 ////Default
                 //.allowedOrigins("*")
-        ;
+        //;
     }
 }

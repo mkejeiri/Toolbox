@@ -204,5 +204,147 @@ public class WebConfig implements WebMvcConfigurer {
 
 
 
- 
 
+Spring Security CORS Configuration
+---------
+To use **Spring Security CORS Configuration**, we need to undo and disable what did in section **Disable Spring Security for Testing**.
+
+**Step 1** - re apply(springSecurity())
+
+```java
+public abstract class BaseIT {
+    @Autowired
+    WebApplicationContext wac;
+
+    protected MockMvc mockMvc;  
+
+    @BeforeEach
+    public void setup() {
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(wac)
+                .apply(springSecurity())
+                .build();
+    }
+...	
+ }
+
+``` 
+**Step 2** -  remove the exclusion of `SecurityAutoConfiguration.class` and `ManagementWebSecurityAutoConfiguration.class`.
+
+```java
+@SpringBootApplication
+//@SpringBootApplication(exclude = {SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class})
+public class DrinkFactoryApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(DrinkFactoryApplication.class, args);
+    }
+
+}
+```
+
+**Step 3** - in `SecurityConfig` enable all configuration.
+```java
+@RequiredArgsConstructor
+@Configuration
+@EnableWebSecurity
+//@EnableGlobalMethodSecurity(securedEnabled = true)
+//@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+public class SecurityConfig extends WebSecurityConfigurerAdapter {...}
+```
+
+**At this level** **only authorized **request will **pass** the **test**,  e.g.  `findDrinksAUTH` test method: 
+
+```java
+//forcing auth as an admin user
+@WithUserDetails("admin")
+    @Test
+    void findDrinksAUTH() throws Exception {
+        mockMvc.perform(get("/api/v1/drink/")
+                .header("Origin", "https://elearning.drinkfactory"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "*"));
+    }
+```
+**spring security doesn't allow options request** without authorization.
+
+In `SecurityConfig` we need to allow **CORS**.
+
+```java
+@RequiredArgsConstructor
+@Configuration
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+    private final UserDetailsService userDetailsService;
+    private final PersistentTokenRepository persistentTokenRepository;
+    private final Google2faFilter google2faFilter;
+...
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+
+        //SessionManagementFilter detects that a user has been authenticated!
+        http.addFilterBefore(google2faFilter, SessionManagementFilter.class);
+
+        http.addFilterBefore(restHeaderAuthFilter(authenticationManager()),
+                UsernamePasswordAuthenticationFilter.class);
+
+
+        http.addFilterBefore(restParamAuthFilter(authenticationManager()),
+                UsernamePasswordAuthenticationFilter.class);
+
+        http.cors().and()
+                //this should before the 2nd authorizeRequests,
+                //because the 2nd authorizeRequests is for anyRequest()!!!
+                .authorizeRequests(expressionInterceptUrlRegistry -> {
+                    expressionInterceptUrlRegistry
+                            //Permit root path & static assets
+                            .antMatchers("/", "/webjars/**", "/login", "/resources/**").permitAll()
+                            .antMatchers("/h2-console/**").permitAll() //don't use in production
+                    ;
+                })
+
+                //Any other request rules!
+                .authorizeRequests()
+                .anyRequest().authenticated()
+                .and()
+                .formLogin(httpSecurityFormLoginConfigurer ->
+                        {
+                            httpSecurityFormLoginConfigurer
+                                    .loginProcessingUrl("/login")
+                                    //we use index as a default page for the login (customizable)
+                                    .loginPage("/").permitAll()
+                                    //on success we forward to the index page (customizable)
+                                    .successForwardUrl("/")
+                                    //redirect everything to index page (customizable)
+                                    .defaultSuccessUrl("/")
+                                    //error  param used by the UI to display alert incorrect username/password
+                                    .failureUrl("/?error");
+                        }
+
+                ).logout(httpSecurityLogoutConfigurer -> {
+                    httpSecurityLogoutConfigurer
+                    //Since we have a link to logout (i.e. get request) and spring security
+                    //handles post request for logout we need to override.
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET"))
+                    .logoutSuccessUrl("/")
+                     //error param used by the UI to display success of logout
+                    .logoutSuccessUrl("/?logout")
+                    .permitAll();
+        })
+                .httpBasic()
+                .and().csrf().ignoringAntMatchers("/h2-console/**", "/api/**")
+                .and()
+                //rememberMe with persistence
+                .rememberMe()
+                    .tokenRepository(persistentTokenRepository)
+                    .userDetailsService(userDetailsService);
+        ;
+
+        http.headers().frameOptions().sameOrigin();
+    }
+}
+```
+
+By adding `http.cors().and()` We could comment out `WebConfig.addCorsMappings`.

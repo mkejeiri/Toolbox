@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 
 @SpringBootTest
 public class CorsIT extends BaseIT {
+    //forcing auth as an admin user
     @WithUserDetails("admin")
     @Test
     void findDrinksAUTH() throws Exception {

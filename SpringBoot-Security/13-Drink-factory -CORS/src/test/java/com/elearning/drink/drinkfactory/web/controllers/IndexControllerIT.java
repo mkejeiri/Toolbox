@@ -8,13 +8,20 @@ import com.elearning.drink.drinkfactory.services.DrinkOrderService;
 import com.elearning.drink.drinkfactory.services.DrinkService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+
+import javax.sql.DataSource;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@WebMvcTest
+//@WebMvcTest
+@SpringBootTest
 public class IndexControllerIT extends  BaseIT{
     @MockBean
     DrinkRepository drinkRepository;
@@ -33,6 +40,8 @@ public class IndexControllerIT extends  BaseIT{
 
     @MockBean
     DrinkOrderService drinkOrderService;
+
+
     @Test
     void testGetIndexSlash() throws Exception{
         mockMvc.perform(get("/" ))

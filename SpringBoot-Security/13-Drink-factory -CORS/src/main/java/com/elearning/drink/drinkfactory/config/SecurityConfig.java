@@ -20,11 +20,11 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 import org.springframework.security.web.session.SessionManagementFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @RequiredArgsConstructor
-//@Configuration
-//@EnableWebSecurity
+@Configuration
+@EnableWebSecurity
 //@EnableGlobalMethodSecurity(securedEnabled = true)
 //@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
-//@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserDetailsService userDetailsService;
     private final PersistentTokenRepository persistentTokenRepository;
@@ -65,7 +65,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         //.csrf().disable() : no need here, handles globally before.
         ;
 
-        http
+        http.cors().and()
                 //this should before the 2nd authorizeRequests,
                 //because the 2nd authorizeRequests is for anyRequest()!!!
                 .authorizeRequests(expressionInterceptUrlRegistry -> {
