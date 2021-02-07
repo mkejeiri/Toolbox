@@ -452,4 +452,50 @@ public class UserController {
 }
 
 ```
+Spring Security 2FA Filter
+--------
+
+We will create the initial implementation of spring security Two-Factor authentication.
+
+Add [Google2faFilter.java](src/main/java/com/elearning/drink/drinkfactory/security/google/Google2faFilter.java) filter.
+
+```java
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class Google2faFilter extends GenericFilterBean {
+
+    private final AuthenticationTrustResolver authenticationTrustResolver = new AuthenticationTrustResolverImpl();
+
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        HttpServletResponse response = (HttpServletResponse) servletResponse;
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        //step 1 -User could be somebody initially logging in, and we hold until
+        //the user has authenticated with username and password (step 2).
+        if (authentication != null  && !authenticationTrustResolver.isAnonymous(authentication)){
+            log.debug("Processing 2FA Filter");
+
+            //Once the user is authenticated with username and password,
+            //we will have an instance of the user within spring security context.
+            //step 2 - If the user is successfully logged in and has a security context object
+            if (authentication.getPrincipal() != null && authentication.getPrincipal() instanceof User) {
+                User user = (User) authentication.getPrincipal();
+
+                // if the user has 2 factors authentication enabled, and it's required.
+                if (user.getUseGoogle2fa() && user.getGoogle2faRequired()) {
+                    log.debug("2FA Required");
+                    // todo add failure handler
+                }
+            }
+        }
+        filterChain.doFilter(request, response);
+    }
+}
+```
+
 
