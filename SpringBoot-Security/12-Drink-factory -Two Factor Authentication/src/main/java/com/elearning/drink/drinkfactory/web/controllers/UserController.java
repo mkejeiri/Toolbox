@@ -47,7 +47,7 @@ public class UserController {
         return "user/register2fa";
     }
 
-    @PostMapping
+    @PostMapping("/register2fa")
     public String confirm2Fa(@RequestParam Integer verifyCode) {
 
         //user from spring security context.
@@ -70,10 +70,37 @@ public class UserController {
             userRepository.save(savedUser);
             return "/index";
 
-        } else {
-            //if bad code, resubmit the form.
-            return "user/register2fa";
         }
+        //if bad code, resubmit the form.
+        return "user/register2fa";
+    }
+
+    //render the forms
+    @GetMapping("/verify2fa")
+    public String verify2fa() {
+        return "user/verify2fa";
+    }
+
+    //Verify code
+    @PostMapping
+    public String verifyPostOf2Fa(@RequestParam Integer verifyCode) {
+
+        //pull the user out of spring context
+        User user = getUser();
+
+        //Validate the code: authorizeUser method returns back a boolean.
+        //using the username, it will look up the user in the database and get the google2FaSecret
+        //and checks that google2FaSecret code does matches with verifyCode using GoogleAuthenticator.checkCode method.
+        if (googleAuthenticator.authorizeUser(user.getUsername(), verifyCode)) {
+            //Proper code entered.
+            //in the spring security context, set `google2faRequired Transient` property to `false`,
+            //i.e. user entered the authentication code in the Two-Factor properly.
+            ((User) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).setGoogle2faRequired(false);
+            return "/index";
+        }
+
+        //bad code return back to verify2fa form.
+        return "user/verify2fa";
     }
 
     private User getUser() {
