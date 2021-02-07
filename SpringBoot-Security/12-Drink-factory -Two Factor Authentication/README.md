@@ -119,3 +119,89 @@ public class User implements UserDetails, CredentialsContainer {
 ```
 The **User** is **forced** to **authenticate** when `userGoogle2fa=true` and `google2faRequired=true`.
 Once the **user enter-in** the **proper** authentication **value**, `google2faRequired` become **false**, i.e. no **longer needed** since the **user** passed through the **Two-Factor authentication**. This operation is **only triggered** if `userGoogle2fa==true`.
+
+
+Configure 2FA Registration Controller
+------------------
+
+**Step 1** - Add controller to handles 2FA.
+
+```java
+@Slf4j
+@RequestMapping("/user")
+@Controller
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserRepository userRepository;
+
+    @GetMapping("/register2fa")
+    public String register2fa(Model model){
+
+        model.addAttribute("googleurl", "todo");
+
+        return "user/register2fa";
+    }
+
+    @PostMapping
+    public String confirm2Fa(@RequestParam Integer verifyCode){
+
+        //todo - impl
+
+        return "index";
+    }
+}
+```
+
+**Step 2** - update layout.html to add menuItem `Enable 2FA`
+
+
+```html
+<li th:replace="::menuItem ('/user/register2fa','user','register','th-list','Enable 2FA')">
+    <span class="glyphicon glyphicon-wrench" aria-hidden="true"></span>
+    <span>Enable 2FA</span>
+</li>
+```
+
+
+**Step 3** - Create the template `register2fa.html` to be shown when the menuItem `Enable 2FA` is clicked.
+```html
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout (~{::body},'home')}">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Two Factor QR Code</title>
+</head>
+<body>
+<h2>Scan QR Code using Google Authenticator, enter code to verify</h2>
+
+<div class="row">
+    <div class="col-md-12">
+        <img th:src="${googleurl}"/>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
+
+        <form th:action="@{/user/register2fa}" class="form-horizontal" id="verify-code-form" method="post">
+            <div class="form-group has-feedback">
+                <label class="control-label" for="verifyCode">Enter Code</label>
+                <input class="form-control" type="number" id="verifyCode" name="verifyCode" autofocus="true" autocomplete="off" b />
+
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <button class="btn btn-default" type="submit" >Verify Code</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+</body>
+</html>
+```
