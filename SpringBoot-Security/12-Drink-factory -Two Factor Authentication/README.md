@@ -205,3 +205,47 @@ public class UserController {
 </body>
 </html>
 ```
+
+Configure Google Secret Persistence
+-----------
+
+We will use the [googleauth](https://github.com/wstrange/GoogleAuth) library:
+
+**Step 1** - add the dependency
+
+```xml
+<dependency>
+  <groupId>com.warrenstrange</groupId>
+  <artifactId>googleauth</artifactId>
+  <version>1.5.0</version>
+</dependency>
+
+```
+
+**Step 2** - Create [GoogleCredentialRepository.java](src/main/java/com/elearning/drink/drinkfactory/security/google/GoogleCredentialRepository.java) that will **get** the **secret** and **save** **secret** into the **database**.
+```java
+@Slf4j
+@RequiredArgsConstructor
+@Component
+public class GoogleCredentialRepository implements ICredentialRepository {
+
+    private final UserRepository userRepository;
+
+    @Override
+    public String getSecretKey(String userName) {
+        User user = userRepository.findByUsername(userName).orElseThrow();
+
+        return user.getGoogle2FaSecret();
+    }
+
+    @Override
+    public void saveUserCredentials(String userName, String secretKey, int validationCode, List<Integer> scratchCodes) {
+        User user = userRepository.findByUsername(userName).orElseThrow();
+        user.setGoogle2FaSecret(secretKey);
+		//user opt-in for F2A
+        user.setUserGoogle2fa(true);
+        userRepository.save(user);
+    }
+}
+
+```
