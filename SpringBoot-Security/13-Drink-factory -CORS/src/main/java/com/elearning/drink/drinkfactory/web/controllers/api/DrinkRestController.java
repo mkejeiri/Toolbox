@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@CrossOrigin()
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/")
@@ -112,6 +113,7 @@ public class DrinkRestController {
 
     //@PreAuthorize("hasAuthority('drink.delete')")
     //@PreAuthorize("hasRole('ADMIN')")
+
     @DrinkDeletePermission
     @DeleteMapping({"drink/{drinkId}"})
     @ResponseStatus(HttpStatus.NO_CONTENT)

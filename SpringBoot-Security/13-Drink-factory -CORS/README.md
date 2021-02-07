@@ -57,8 +57,10 @@ Spring Framework CORS Support
 
 
 
-Disable Spring Security for Testing
+Disable Spring Security for Testing 
 -----
+To work with **CORS within Spring MVC only**, we will **disable Spring Security for Testing** and **simulate browser request** through `CorsIT` class.
+
 
 **Step 1** - add [CorsIT](src/test/java/com/elearning/drink/drinkfactory/web/controllers/api/CorsIT.java) integration test.
 We are emulating through a ** spring mock MVC test**  the ** browser**  ** pre-flight**  ** checks** .
@@ -172,3 +174,35 @@ public abstract class BaseIT {
  }
 
 ``` 
+
+
+**Step 5** - We will manage `"GET", "POST" and "PUT"` at global level, we need to add `WebConfig` class.
+
+```java
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        //CORS for GET, POST, PUT are managed globally here.
+        registry.addMapping("/**").allowedMethods("GET", "POST", "PUT", "DELETE") //allow all origin OR
+                ////or apply filter on origin
+                //.allowedOrigins("elearning.drinkfactory")
+                ////Default
+                //.allowedOrigins("*")
+        ;
+    }
+}
+```
+**The CorsIT test is green** : So previously until we set up the options (i.e. `registry.addMapping("/**").allowedMethods("GET", "POST", "PUT", "DELETE")`), this wasn't working.
+
+
+**Step 6** - Alternatively we could allow **CORS** at **Controller level** or **Method level** by specifying `@CrossOrigin` **annotation**.
+`@CrossOrigin` **annotation** is flexible, we can specify Origin's with `allowedHeaders()`, `exposedHeaders()`, `methods()`, `allowCredentials()` and `maxAge()`. `@CrossOrigin` **annotation** are more **suitable** and **cleaner** if we want more **granular control**.
+
+
+
+
+
+ 
+
