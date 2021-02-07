@@ -29,6 +29,7 @@ public class UserController {
     @GetMapping("/register2fa")
     public String register2fa(Model model) {
 
+        //user from spring security context.
         User user = getUser();
 
         //this will go out to Google Services to create a QR code and returning back an image
@@ -49,11 +50,34 @@ public class UserController {
     @PostMapping
     public String confirm2Fa(@RequestParam Integer verifyCode) {
 
-        //todo - impl
-        return "index";
+        //user from spring security context.
+        User user = getUser();
+
+        log.debug("Entered Code is:" + verifyCode);
+
+        //Validate the code: authorizeUser method returns back a boolean.
+        //using the username, it will look up the user in the database and get the google2FaSecret
+        //and checks that google2FaSecret code does matches with verifyCode using GoogleAuthenticator.checkCode method.
+        if (googleAuthenticator.authorizeUser(user.getUsername(), verifyCode)) {
+
+            //update the verified user because user object is detached from hibernate and
+            //it could be stale (i.e. doesn't reflect the latest version from the database).
+            User savedUser = userRepository.findById(user.getId()).orElseThrow();
+
+            //setUserGoogle2fa(true): user has completed registration for Two-Factor authentication.
+            //default is false.
+            savedUser.setUserGoogle2fa(true);
+            userRepository.save(savedUser);
+            return "/index";
+
+        } else {
+            //if bad code, resubmit the form.
+            return "user/register2fa";
+        }
     }
 
     private User getUser() {
+        //user from spring security context.
         return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
 }

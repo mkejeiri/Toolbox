@@ -253,7 +253,7 @@ public class GoogleCredentialRepository implements ICredentialRepository {
 
 Generate QR Code for Google Authenticator
 -----------
-**Step 1** - create [GoogleAuthenticator](src/main/java/com/elearning/drink/drinkfactory/config/SecurityBeans.java) `Bean`.
+**Step 1** - **create** [GoogleAuthenticator](src/main/java/com/elearning/drink/drinkfactory/config/SecurityBeans.java) `Bean`.
 ```java
 @Configuration
 public class SecurityBeans {
@@ -283,7 +283,7 @@ public class SecurityBeans {
 ```
 
 
-**Step 2** - update [UserController](src/main/java/com/elearning/drink/drinkfactory/web/controllers/UserController.java)
+**Step 2** - **update** [UserController](src/main/java/com/elearning/drink/drinkfactory/web/controllers/UserController.java)
 ```java
 public class UserController {
 
@@ -312,16 +312,60 @@ public class UserController {
 
         return "user/register2fa";
     }
-	
-	@PostMapping
-    public String confirm2Fa(@RequestParam Integer verifyCode) {
-
-        //todo - impl
-        return "index";
-    }
 
     private User getUser() {
         return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     }
+	...
 }
 ```
+
+
+
+**Step 3** - **Verify 2FA Opt In** (i.e. `confirm2Fa` method), update [UserController](src/main/java/com/elearning/drink/drinkfactory/web/controllers/UserController.java) 
+```java
+@Slf4j
+@RequestMapping("/user")
+@Controller
+@RequiredArgsConstructor
+public class UserController {
+
+    //ISSUER: show up in the Google authenticator as "my application".
+    public static final String ISSUER = "eLearning";
+    public static final String GOOGLE_URL_ATTRIBUTE_NAME = "googleurl";
+    private final UserRepository userRepository;
+    private final GoogleAuthenticator googleAuthenticator;
+	...
+    @PostMapping
+    public String confirm2Fa(@RequestParam Integer verifyCode) {
+
+        //user from spring security context.
+        User user = getUser();
+
+        log.debug("Entered Code is:" + verifyCode);
+
+        //Validate the code: authorizeUser method returns back a boolean.
+        //using the username, it will look up the user in the database and get the google2FaSecret
+        //and checks that google2FaSecret code does matches with verifyCode using GoogleAuthenticator.checkCode method.
+        if (googleAuthenticator.authorizeUser(user.getUsername(), verifyCode)) {
+
+            //update the verified user because user object is detached from hibernate and
+            //it could be stale (i.e. doesn't reflect the latest version from the database).
+            User savedUser = userRepository.findById(user.getId()).orElseThrow();
+
+            //setUserGoogle2fa(true): user has completed registration for Two-Factor authentication.
+            //default is false.
+            savedUser.setUserGoogle2fa(true);
+            userRepository.save(savedUser);
+            return "/index";
+
+        } else {
+            //if bad code, resubmit the form.
+            return "user/register2fa";
+        }
+    }
+
+```
+
+
+
