@@ -549,3 +549,49 @@ public class Google2faFailureHandler implements AuthenticationFailureHandler {
 				
 ....
 ```
+
+
+**Step 3** - update [Google2faFilter.java](src/main/java/com/elearning/drink/drinkfactory/security/google/Google2faFilter.java) to **skip the filter anything matches static resources**. We want to continue **normally** with the **spring security filter** and **return**. **Otherwise**, the **filter redirect us again** which get us into an **endless loop!**.
+
+```java
+@Slf4j
+@Component
+public class Google2faFilter extends GenericFilterBean {
+
+   ...
+    //Static resources in verify2fa and resources
+    private final RequestMatcher urlIs2fa = new AntPathRequestMatcher("/user/verify2fa");
+    private final RequestMatcher urlResource = new AntPathRequestMatcher("/resources/**");
+
+    @Override
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+            throws IOException, ServletException {
+
+        HttpServletRequest request = (HttpServletRequest) servletRequest;
+        HttpServletResponse response = (HttpServletResponse) servletResponse;
+
+        //request matcher for css, js, img, webjar, favicon common locations!
+        StaticResourceRequest.StaticResourceRequestMatcher
+                staticResourceRequestMatcher = PathRequest.toStaticResources().atCommonLocations();
+
+        //Skip the filter is anything matches.
+        //for static resources we want to continue normally with the spring security filter and return.
+        //otherwise the filter redirect again which get us into an endless loop!;
+        if (urlIs2fa.matches(request) || urlResource.matches(request) ||
+                staticResourceRequestMatcher.matcher(request).isMatch()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+
+        if (urlIs2fa.matches(request) || urlResource.matches(request) ||
+                staticResourceRequestMatcher.matcher(request).isMatch()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+...
+    }
+}
+```
+

@@ -3,10 +3,14 @@ package com.elearning.drink.drinkfactory.security.google;
 import com.elearning.drink.drinkfactory.domain.security.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
+import org.springframework.boot.autoconfigure.security.servlet.StaticResourceRequest;
 import org.springframework.security.authentication.AuthenticationTrustResolver;
 import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -27,12 +31,38 @@ public class Google2faFilter extends GenericFilterBean {
     //we're not injecting anything into it, so it doesn't need to be a spring bean component.
     private final Google2faFailureHandler google2faFailureHandler = new Google2faFailureHandler();
 
+    //Static resources in verify2fa and resources
+    private final RequestMatcher urlIs2fa = new AntPathRequestMatcher("/user/verify2fa");
+    private final RequestMatcher urlResource = new AntPathRequestMatcher("/resources/**");
+
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
             throws IOException, ServletException {
 
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
+
+        //request matcher for css, js, img, webjar, favicon common locations!
+        StaticResourceRequest.StaticResourceRequestMatcher
+                staticResourceRequestMatcher = PathRequest.toStaticResources().atCommonLocations();
+
+        //Skip the filter is anything matches.
+        //for static resources we want to continue normally with the spring security filter and return.
+        //otherwise the filter redirect again which get us into an endless loop!;
+        if (urlIs2fa.matches(request) || urlResource.matches(request) ||
+                staticResourceRequestMatcher.matcher(request).isMatch()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+
+        if (urlIs2fa.matches(request) || urlResource.matches(request) ||
+                staticResourceRequestMatcher.matcher(request).isMatch()) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
